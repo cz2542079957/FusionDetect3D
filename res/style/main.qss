@@ -1,0 +1,24 @@
+QMenuBar {
+    background-color: #1D1F21; /* 设置菜单栏背景色为浅灰色 */
+}
+
+QMenuBar::item {
+    color: blue; /* 设置菜单文字颜色为蓝色 */
+}
+
+QMenu {
+    background-color: white; /* 设置下拉菜单背景色为白色 */
+}
+
+QMenu::item {
+    padding: 5px;
+    color: black; /* 设置下拉菜单项的文字颜色为黑色 */
+}
+
+QMenu::item:selected {
+    background-color: #dcdcdc; /* 设置选中的菜单项背景色 */
+}
+
+QMenu::item:disabled {
+    color: darkgray; /* 设置禁用的菜单项文字颜色为深灰色 */
+}

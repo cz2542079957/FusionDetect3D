@@ -1,0 +1,10 @@
+<RCC>
+    <qresource prefix="/">
+        <file>shader/axis_430.frag</file>
+        <file>shader/axis_430.vert</file>
+        <file>shader/mesh_430.frag</file>
+        <file>shader/mesh_430.vert</file>
+        <file>shader/shader_point.frag</file>
+        <file>shader/shader_point.vert</file>
+    </qresource>
+</RCC>
