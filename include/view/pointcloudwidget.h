@@ -1,5 +1,5 @@
-#ifndef POINTCLOUDWIDGE_H
-#define POINTCLOUDWIDGE_H
+#ifndef POINTCLOUDWIDGET_H
+#define POINTCLOUDWIDGET_H
 
 #include "QOpenGLWidget"
 #include "QOpenGLFunctions_4_3_Core"
@@ -10,16 +10,16 @@
 #include "cameracontroller.h"
 
 
-class pointCloudWidge : public QOpenGLWidget, QOpenGLFunctions_4_3_Core
+class PointCloudWidget : public QOpenGLWidget, QOpenGLFunctions_4_3_Core
 {
     Q_OBJECT
 public:
-    explicit pointCloudWidge(QWidget *parent = nullptr);
-    ~pointCloudWidge();
+    explicit PointCloudWidget(QWidget *parent = nullptr);
+    ~PointCloudWidget();
 
 private :
     //相机控制器
-    cameraController camera;
+    CameraController camera;
     //变换矩阵(模型、视野、投影)
     QMatrix4x4 model, view, projection;
     //渲染距离
@@ -115,4 +115,4 @@ public slots:
 };
 
 
-#endif // POINTCLOUDWIDGE_H
+#endif // POINTCLOUDWIDGET_H

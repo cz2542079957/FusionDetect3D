@@ -1,6 +1,6 @@
 #include "cameracontroller.h"
 
-cameraController::cameraController()
+CameraController::CameraController()
 {
     baseVector = QVector3D(baseDirection - basePos);
     baseVector.normalize();
@@ -12,86 +12,86 @@ cameraController::cameraController()
     connect(&timer, SIGNAL(timeout()), this, SLOT(handler()));
 }
 
-cameraController::~cameraController()
+CameraController::~CameraController()
 {
 }
 
-const QVector3D &cameraController::getBasePos() const
+const QVector3D &CameraController::getBasePos() const
 {
     return basePos;
 }
 
-void cameraController::setBasePos(const QVector3D &newBasePos)
+void CameraController::setBasePos(const QVector3D &newBasePos)
 {
     basePos = newBasePos;
 }
 
-void cameraController::basePosAdd(const QVector3D &delta)
+void CameraController::basePosAdd(const QVector3D &delta)
 {
     basePos += delta;
 }
 
-const QVector3D &cameraController::getBaseUp() const
+const QVector3D &CameraController::getBaseUp() const
 {
     return baseUp;
 }
 
-void cameraController::setBaseUp(const QVector3D &newBaseUp)
+void CameraController::setBaseUp(const QVector3D &newBaseUp)
 {
     baseUp = newBaseUp;
 }
 
-const QVector3D &cameraController::getCameraRight() const
+const QVector3D &CameraController::getCameraRight() const
 {
     return cameraRight;
 }
 
-void cameraController::setCameraRight(const QVector3D &newCameraRight)
+void CameraController::setCameraRight(const QVector3D &newCameraRight)
 {
     cameraRight = newCameraRight;
 }
 
-const QVector3D &cameraController::getCameraUp() const
+const QVector3D &CameraController::getCameraUp() const
 {
     return cameraUp;
 }
 
-void cameraController::setCameraUp(const QVector3D &newCameraUp)
+void CameraController::setCameraUp(const QVector3D &newCameraUp)
 {
     cameraUp = newCameraUp;
 }
 
-const QVector3D &cameraController::getBaseDirection() const
+const QVector3D &CameraController::getBaseDirection() const
 {
     return baseDirection;
 }
 
-void cameraController::setBaseDirection(const QVector3D &newBaseDirection)
+void CameraController::setBaseDirection(const QVector3D &newBaseDirection)
 {
     baseDirection = newBaseDirection;
 }
 
-const QVector3D &cameraController::getBaseVector() const
+const QVector3D &CameraController::getBaseVector() const
 {
     return baseVector;
 }
 
-void cameraController::setBaseVector(const QVector3D &newBaseVector)
+void CameraController::setBaseVector(const QVector3D &newBaseVector)
 {
     baseVector = newBaseVector;
 }
 
-float cameraController::getSpeed() const
+float CameraController::getSpeed() const
 {
     return moveSpeed;
 }
 
-void cameraController::setSpeed(float newSpeed)
+void CameraController::setSpeed(float newSpeed)
 {
     moveSpeed = newSpeed;
 }
 
-void cameraController::keypressActionHandler(QKeyEvent *event)
+void CameraController::keypressActionHandler(QKeyEvent *event)
 {
     if (!event->isAutoRepeat()) //判断如果不是长按时自动触发的按下,就将key值加入容器
     {
@@ -103,7 +103,7 @@ void cameraController::keypressActionHandler(QKeyEvent *event)
     }
 }
 
-void cameraController::keyreleaseActionHandler(QKeyEvent *event)
+void CameraController::keyreleaseActionHandler(QKeyEvent *event)
 {
     if (!event->isAutoRepeat()) //判断如果不是长按时自动触发的释放,就将key值从容器中删除
     {
@@ -115,7 +115,7 @@ void cameraController::keyreleaseActionHandler(QKeyEvent *event)
     }
 }
 
-void cameraController::handler()
+void CameraController::handler()
 {
     foreach (auto k, keys)
     {
@@ -164,7 +164,7 @@ void cameraController::handler()
 
 }
 
-void cameraController::wheelActionHandler(QWheelEvent *event)
+void CameraController::wheelActionHandler(QWheelEvent *event)
 {
     QPoint p = event->angleDelta();
     int x =  p.x();
@@ -181,22 +181,22 @@ void cameraController::wheelActionHandler(QWheelEvent *event)
     emit updateGraph();
 }
 
-float cameraController::getFov() const
+float CameraController::getFov() const
 {
     return fov;
 }
 
-void cameraController::mousepressActionHandler(QMouseEvent *event)
+void CameraController::mousepressActionHandler(QMouseEvent *event)
 {
     lastMousePos = event->pos();
 }
 
-void cameraController::mousereleaseActionHandler(QMouseEvent *event)
+void CameraController::mousereleaseActionHandler(QMouseEvent *event)
 {
     lastMousePos = event->pos();
 }
 
-void cameraController::mousemoveActionHandler(QMouseEvent *event)
+void CameraController::mousemoveActionHandler(QMouseEvent *event)
 {
     currentMousePos = event->pos();
     if (pointsDistance(currentMousePos, lastMousePos)  <= 2)

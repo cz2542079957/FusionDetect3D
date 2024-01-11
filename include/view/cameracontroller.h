@@ -7,7 +7,7 @@
 #include "QWidget"
 #include "QTimer"
 
-class cameraController: public QWidget
+class CameraController: public QWidget
 {
     Q_OBJECT
 public:
@@ -27,8 +27,8 @@ public:
     }
 
 public:
-    cameraController();
-    ~cameraController();
+    CameraController();
+    ~CameraController();
 
     const QVector3D &getBasePos() const;
     void setBasePos(const QVector3D &newBasePos);

@@ -40,28 +40,36 @@ find_package(Qt6 REQUIRED COMPONENTS Widgets OpenGLWidgets)
 
 ###################################################################################
 #
-#################################################################################### 文件路径
+###################################################################################
+# 文件路径
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/src
     ${CMAKE_CURRENT_SOURCE_DIR}/src/view
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ros2
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ui
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/include/view
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/ros2
     ${CMAKE_CURRENT_SOURCE_DIR}/res
 
 )
 list(APPEND CMAKE_AUTOUIC_SEARCH_PATHS "src/ui")
-set(SOURCE
-    main.cpp
-
+set(HPP_FILE
     include/mainwindow.h
-    include/view/pointcloudwidge.h
+    include/view/pointcloudwidget.h
     include/view/cameracontroller.h
-
+    include/ros2/devicecontroller.h
+)
+set(CPP_FILE
+    main.cpp
     src/mainwindow.cpp
-    src/view/pointcloudwidge.cpp
+    src/view/pointcloudwidget.cpp
     src/view/cameracontroller.cpp
-
+    src/ros2/devicecontroller.cpp
+)
+set(SOURCE
+    ${HPP_FILE}
+    ${CPP_FILE}
     src/ui/mainwindow.ui
 
     res/res.qrc

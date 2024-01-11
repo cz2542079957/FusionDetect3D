@@ -6,21 +6,19 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent), ui(new Ui::MainWin
     ui->setupUi(this);
     connect(this, SIGNAL(showAxis(bool)), ui->pointCloudWidget, SLOT(showAxis(bool)));
     connect(this, SIGNAL(showMesh(bool)), ui->pointCloudWidget, SLOT(showMesh(bool)));
+
     //    //取消标题栏
     //    this->setWindowFlags(Qt::FramelessWindowHint);
     //    // 去掉标题栏,去掉工具栏，窗口置顶
     //    setWindowFlags(Qt::FramelessWindowHint | Qt::Tool | Qt::WindowStaysOnTopHint);
     //    //设置窗体透明度
     //    setWindowOpacity(0.7);
-
-
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
 }
-
 
 void MainWindow::on_showMesh_clicked()
 {
@@ -33,7 +31,6 @@ void MainWindow::on_showMesh_clicked()
         emit showMesh(false);
     }
 }
-
 
 void MainWindow::on_showAxis_clicked()
 {

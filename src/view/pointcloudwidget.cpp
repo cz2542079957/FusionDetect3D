@@ -1,7 +1,7 @@
-﻿#include "pointcloudwidge.h"
+﻿#include "pointcloudwidget.h"
 
 
-pointCloudWidge::pointCloudWidge(QWidget *parent): QOpenGLWidget(parent)
+PointCloudWidget::PointCloudWidget(QWidget *parent): QOpenGLWidget(parent)
 {
     this->setGeometry(parent->rect().x(), parent->rect().y(), parent->rect().width(), parent->rect().height());
     setFocusPolicy(Qt::ClickFocus);
@@ -17,8 +17,7 @@ pointCloudWidge::pointCloudWidge(QWidget *parent): QOpenGLWidget(parent)
     //    qDebug() << camera.getCameraUp();
 }
 
-
-pointCloudWidge::~pointCloudWidge()
+PointCloudWidget::~PointCloudWidget()
 {
     if (!isValid())
     {
@@ -32,45 +31,46 @@ pointCloudWidge::~pointCloudWidge()
     doneCurrent();
 }
 
-void pointCloudWidge::keyPressEvent(QKeyEvent *event)
+void PointCloudWidget::keyPressEvent(QKeyEvent *event)
 {
     camera.keypressActionHandler(event);
 }
 
-void pointCloudWidge::keyReleaseEvent(QKeyEvent *event)
+void PointCloudWidget::keyReleaseEvent(QKeyEvent *event)
 {
     camera.keyreleaseActionHandler(event);
 }
 
-void pointCloudWidge::mousePressEvent(QMouseEvent *event)
+void PointCloudWidget::mousePressEvent(QMouseEvent *event)
 {
     camera.mousepressActionHandler(event);
 }
 
-void pointCloudWidge::mouseMoveEvent(QMouseEvent *event)
+void PointCloudWidget::mouseMoveEvent(QMouseEvent *event)
 {
     camera.mousemoveActionHandler(event);
 }
 
-void pointCloudWidge::mouseReleaseEvent(QMouseEvent *event)
+void PointCloudWidget::mouseReleaseEvent(QMouseEvent *event)
 {
     camera.mousereleaseActionHandler(event);
 }
 
-void pointCloudWidge::wheelEvent(QWheelEvent *event)
+void PointCloudWidget::wheelEvent(QWheelEvent *event)
 {
     camera.wheelActionHandler(event);
 }
 
-void pointCloudWidge::sendPoints(QVector<float> data)
+void PointCloudWidget::sendPoints(QVector<float> data)
+{
+
+}
+
+void PointCloudWidget::drawPointsHandle()
 {
 }
 
-void pointCloudWidge::drawPointsHandle()
-{
-}
-
-void pointCloudWidge::initializeGL()
+void PointCloudWidget::initializeGL()
 {
     initializeOpenGLFunctions();
     glEnable(GL_DEPTH_TEST);
@@ -123,14 +123,14 @@ void pointCloudWidge::initializeGL()
 
 }
 
-void pointCloudWidge::resizeGL(int w, int h)
+void PointCloudWidget::resizeGL(int w, int h)
 {
     glViewport(0, 0, w, h);
 }
 
-void pointCloudWidge::paintGL()
+void PointCloudWidget::paintGL()
 {
-    glClearColor(0.4255, 0.4569, 0.4882, 1.0f);
+    glClearColor(0.3255, 0.3569, 0.3882, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     //变换矩阵设置
@@ -164,26 +164,26 @@ void pointCloudWidge::paintGL()
 
 }
 
-void pointCloudWidge::onTimeout()
+void PointCloudWidget::onTimeout()
 {
     makeCurrent();
     doneCurrent();
     update();
 }
 
-void pointCloudWidge::showAxis(bool val)
+void PointCloudWidget::showAxis(bool val)
 {
     enableAxis  = val;
     update();
 }
 
-void pointCloudWidge::showMesh(bool val)
+void PointCloudWidget::showMesh(bool val)
 {
     enableMesh = val;
     update();
 }
 
-void pointCloudWidge::drawMesh(int rowBegin, int  rows, int  columnBegin, int  columns)
+void PointCloudWidget::drawMesh(int rowBegin, int  rows, int  columnBegin, int  columns)
 {
     meshData.clear();
     meshLinesCount = rows  + columns + 2;

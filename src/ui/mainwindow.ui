@@ -127,7 +127,7 @@
      </widget>
     </item>
     <item>
-     <widget class="pointCloudWidge" name="pointCloudWidget" native="true"/>
+     <widget class="PointCloudWidget" name="PointCloudWidget" native="true"/>
     </item>
    </layout>
   </widget>
@@ -145,9 +145,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>pointCloudWidge</class>
+   <class>PointCloudWidget</class>
    <extends>QWidget</extends>
-   <header location="global">pointcloudwidge.h</header>
+   <header>pointcloudwidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

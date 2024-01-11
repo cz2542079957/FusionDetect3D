@@ -2,11 +2,12 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include "devicecontroller.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui
 {
-class MainWindow;
+    class MainWindow;
 }
 QT_END_NAMESPACE
 
@@ -21,7 +22,7 @@ public:
 private:
     Ui::MainWindow *ui;
     //设备控制器
-//    deviceController dc;
+    DeviceController dc;
 
 
 signals:
@@ -31,5 +32,6 @@ signals:
 private slots:
     void on_showMesh_clicked();
     void on_showAxis_clicked();
+
 };
 #endif // MAINWINDOW_H
