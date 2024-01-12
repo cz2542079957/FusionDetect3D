@@ -127,7 +127,7 @@
      </widget>
     </item>
     <item>
-     <widget class="PointCloudWidget" name="PointCloudWidget" native="true"/>
+     <widget class="PointCloudWidget" name="pointCloudWidget" native="true"/>
     </item>
    </layout>
   </widget>

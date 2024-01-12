@@ -4,7 +4,7 @@
         <file>shader/axis_430.vert</file>
         <file>shader/mesh_430.frag</file>
         <file>shader/mesh_430.vert</file>
-        <file>shader/shader_point.frag</file>
-        <file>shader/shader_point.vert</file>
+        <file>shader/point_430.frag</file>
+        <file>shader/point_430.vert</file>
     </qresource>
 </RCC>

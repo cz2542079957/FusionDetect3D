@@ -6,6 +6,8 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent), ui(new Ui::MainWin
     ui->setupUi(this);
     connect(this, SIGNAL(showAxis(bool)), ui->pointCloudWidget, SLOT(showAxis(bool)));
     connect(this, SIGNAL(showMesh(bool)), ui->pointCloudWidget, SLOT(showMesh(bool)));
+    connect(&this->dc, SIGNAL(sendPointsSignals(sensor_msgs::msg::LaserScan::SharedPtr)), ui->pointCloudWidget,
+            SLOT(recvPointsData(sensor_msgs::msg::LaserScan::SharedPtr)));
 
     //    //取消标题栏
     //    this->setWindowFlags(Qt::FramelessWindowHint);

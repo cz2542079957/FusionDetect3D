@@ -16,6 +16,7 @@ include_directories(
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
 
 
 
@@ -46,10 +47,12 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/src
     ${CMAKE_CURRENT_SOURCE_DIR}/src/view
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ros2
+    # ${CMAKE_CURRENT_SOURCE_DIR}/src/ros2/lidar
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ui
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/include/view
     ${CMAKE_CURRENT_SOURCE_DIR}/include/ros2
+    # ${CMAKE_CURRENT_SOURCE_DIR}/include/ros2/lidar
     ${CMAKE_CURRENT_SOURCE_DIR}/res
 
 )
@@ -59,6 +62,7 @@ set(HPP_FILE
     include/view/pointcloudwidget.h
     include/view/cameracontroller.h
     include/ros2/devicecontroller.h
+    include/ros2/lidar/lidarnode.h
 )
 set(CPP_FILE
     main.cpp
@@ -66,6 +70,7 @@ set(CPP_FILE
     src/view/pointcloudwidget.cpp
     src/view/cameracontroller.cpp
     src/ros2/devicecontroller.cpp
+    src/ros2/lidar/lidarnode.cpp
 )
 set(SOURCE
     ${HPP_FILE}
@@ -76,7 +81,7 @@ set(SOURCE
 )
 add_executable(main ${SOURCE})
 # ros2 依赖
-set(ROS2_DEPENDENCIES rclcpp rcl std_msgs)
+set(ROS2_DEPENDENCIES rclcpp rcl std_msgs sensor_msgs)
 # qt6 依赖
 set(QT6_DEPENDENCIES Qt6::Widgets Qt6::OpenGLWidgets)
 target_link_libraries(main

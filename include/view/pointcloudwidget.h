@@ -8,6 +8,8 @@
 #include "QTimer"
 #include "QTime"
 #include "cameracontroller.h"
+#include "rclcpp/rclcpp.hpp"
+#include "sensor_msgs/msg/laser_scan.hpp"
 
 
 class PointCloudWidget : public QOpenGLWidget, QOpenGLFunctions_4_3_Core
@@ -28,20 +30,17 @@ private :
 
     QTimer timer;
 
-
-    std::vector<float> linesDataBuffer;
-
-    QOpenGLShaderProgram shaderProgram;
-    unsigned int  VAO, VBO;
-    float vertices[18] =
-    {
-        0.5f, 0.5f, 0.0f,
-        0.5f, -0.5f, 0.0f,
-        -0.5f, 0.5f, 0.0f,
-        0.5f, -0.5f, 0.0f,
-        -0.5f, -0.5f, 0.0f,
-        -0.5f, 0.5f, 0.0f,
-    };
+    // QOpenGLShaderProgram shaderProgram;
+    // unsigned int  VAO, VBO;
+    // float vertices[18] =
+    // {
+    //     0.5f, 0.5f, 0.0f,
+    //     0.5f, -0.5f, 0.0f,
+    //     -0.5f, 0.5f, 0.0f,
+    //     0.5f, -0.5f, 0.0f,
+    //     -0.5f, -0.5f, 0.0f,
+    //     -0.5f, 0.5f, 0.0f,
+    // };
 
 
     //坐标轴
@@ -78,6 +77,13 @@ private :
     std::vector<float> meshData;
 
 
+    //点云
+    bool enablePoints = true;
+    unsigned pointsVAO, pointsVBO;
+    QOpenGLShaderProgram shaderProgramPoints;
+    std::vector<float> pointsData;
+
+
     //按键监听
     void keyPressEvent(QKeyEvent *event) override;
     void keyReleaseEvent(QKeyEvent *event)override;
@@ -109,8 +115,7 @@ public slots:
     void drawMesh(int rowBegin, int  rows, int  columnBegin, int  columns);
 
     //拿到点云数据
-    //    void recvPointsData();
-
+    void recvPointsData(const sensor_msgs::msg::LaserScan::SharedPtr msg);
 
 };
 
