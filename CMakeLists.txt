@@ -47,11 +47,13 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/src
     ${CMAKE_CURRENT_SOURCE_DIR}/src/view
     ${CMAKE_CURRENT_SOURCE_DIR}/src/view/pointCloud
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/view/infoTree
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ros2
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ui
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/include/view
     ${CMAKE_CURRENT_SOURCE_DIR}/include/view/pointCloud
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/view/infoTree
     ${CMAKE_CURRENT_SOURCE_DIR}/include/ros2
     ${CMAKE_CURRENT_SOURCE_DIR}/res
 
@@ -63,6 +65,7 @@ set(HPP_FILE
     include/view/pointCloud/pointCloudWidget.h
     include/view/pointCloud/cameraController.h
     include/view/pointCloud/pointCloudDataManager.h
+    include/view/infoTree/infoTree.h
     include/ros2/deviceController.h
     include/ros2/lidar/lidarNode.h
 )
@@ -72,6 +75,7 @@ set(CPP_FILE
     src/view/pointCloud/pointCloudWidget.cpp
     src/view/pointCloud/cameraController.cpp
     src/view/pointCloud/pointCloudDataManager.cpp
+    src/view/infoTree/infoTree.cpp
     src/ros2/deviceController.cpp
     src/ros2/lidar/lidarNode.cpp
 )

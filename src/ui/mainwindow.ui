@@ -126,6 +126,21 @@
     <item>
      <widget class="QWidget" name="center" native="true">
       <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <property name="spacing">
+        <number>0</number>
+       </property>
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
        <item>
         <widget class="QWidget" name="nav" native="true">
          <property name="minimumSize">
@@ -159,6 +174,34 @@
            <height>10000</height>
           </size>
          </property>
+         <layout class="QVBoxLayout" name="verticalLayout_2">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+          <item>
+           <widget class="QLabel" name="label">
+            <property name="text">
+             <string>状态信息</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="NSInfoTree::InfoTree" name="infoTree">
+            <attribute name="headerVisible">
+             <bool>false</bool>
+            </attribute>
+           </widget>
+          </item>
+         </layout>
         </widget>
        </item>
       </layout>
@@ -200,6 +243,11 @@
    <extends>QWidget</extends>
    <header>pointCloudWidget.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>NSInfoTree::InfoTree</class>
+   <extends>QTreeView</extends>
+   <header>infoTree.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

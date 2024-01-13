@@ -2,7 +2,6 @@
 #define LIDARNODE_H
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/laser_scan.hpp"
-#include "utils.h"
 
 class LidarNode: public rclcpp::Node
 {

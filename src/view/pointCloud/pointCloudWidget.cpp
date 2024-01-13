@@ -179,16 +179,15 @@ void PointCloudWidget::paintGL()
     if (enablePoints)
     {
         // RCLCPP_INFO_STREAM( rclcpp::get_logger("lidarNodeSubscriber"), pointCloudDataManager.getLastDataSize() << " ," <<  pointCloudDataManager.getCurrentCacheSize());
-
-
         glBindVertexArray(pointsVAO);
         glBindBuffer(GL_ARRAY_BUFFER, pointsVBO);
 
         // todo 绘制新的点
-        // glBufferData(GL_ARRAY_BUFFER, pointsData.size() * sizeof(float), &pointsData[0],  GL_DYNAMIC_DRAW);
-        glBufferSubData(GL_ARRAY_BUFFER,  pointCloudDataManager.getLastDataSize() * sizeof(float),
-                        (pointCloudDataManager.getCurrentCacheSize() - pointCloudDataManager.getLastDataSize())  * sizeof(float),
-                        &pointCloudDataManager.getData()[pointCloudDataManager.getLastDataSize()]);
+        // RCLCPP_INFO_STREAM(rclcpp::get_logger("1"),  pointCloudDataManager.getPointNeedPaintNumber());
+        unsigned long needPaintNumber = pointCloudDataManager.getPointNeedPaintNumber();
+        glBufferSubData(GL_ARRAY_BUFFER,  (pointCloudDataManager.getCurrentCacheSize() - needPaintNumber)* sizeof(float),
+                        needPaintNumber * sizeof(float),
+                        &pointCloudDataManager.getData()[pointCloudDataManager.getCurrentCacheSize() - needPaintNumber]);
         shaderProgramPoints.bind();
         shaderProgramPoints.setUniformValue("model", model);
         shaderProgramPoints.setUniformValue("view", view);
@@ -258,9 +257,6 @@ void PointCloudWidget::recvPointsData(const sensor_msgs::msg::LaserScan::SharedP
         z = 0;
         x = std::cos(rad) * msg->ranges[i];
         y = std::sin(rad) * msg->ranges[i];
-        // pointsData.push_back(x);
-        // pointsData.push_back(y);
-        // pointsData.push_back(z);
         newPointsData.push_back(x);
         newPointsData.push_back(y);
         newPointsData.push_back(z);
@@ -280,13 +276,6 @@ void PointCloudWidget::recvPointsData(const sensor_msgs::msg::LaserScan::SharedP
     //                        " ," << temp[i + 4] <<
     //                        " ," << temp[i + 5]  );
     // }
-    // std::vector<float> temp = pointCloudDataManager.getData();
-    // RCLCPP_INFO_STREAM(rclcpp::get_logger("lidarNodeSubscriber"), temp[0] <<
-    //                    " ," << temp[1] <<
-    //                    " ," << temp[2] <<
-    //                    " ," << temp[3] <<
-    //                    " ," << temp[4] <<
-    //                    " ," << temp[5]  );
     update();
 }
 

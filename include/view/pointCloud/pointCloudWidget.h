@@ -70,7 +70,7 @@ namespace NSPointCloud
         unsigned pointsVAO, pointsVBO;
         QOpenGLShaderProgram shaderProgramPoints;
         //点大小
-        float pointSize = 2.0;
+        float pointSize = 3;
         //点云数据
         PointCloudDataManager pointCloudDataManager;
         std::vector<float> pointsData;
