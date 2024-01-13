@@ -46,31 +46,34 @@ find_package(Qt6 REQUIRED COMPONENTS Widgets OpenGLWidgets)
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/src
     ${CMAKE_CURRENT_SOURCE_DIR}/src/view
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/view/pointCloud
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ros2
-    # ${CMAKE_CURRENT_SOURCE_DIR}/src/ros2/lidar
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ui
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/include/view
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/view/pointCloud
     ${CMAKE_CURRENT_SOURCE_DIR}/include/ros2
-    # ${CMAKE_CURRENT_SOURCE_DIR}/include/ros2/lidar
     ${CMAKE_CURRENT_SOURCE_DIR}/res
 
 )
 list(APPEND CMAKE_AUTOUIC_SEARCH_PATHS "src/ui")
 set(HPP_FILE
+    include/utils.h
     include/mainwindow.h
-    include/view/pointcloudwidget.h
-    include/view/cameracontroller.h
-    include/ros2/devicecontroller.h
-    include/ros2/lidar/lidarnode.h
+    include/view/pointCloud/pointCloudWidget.h
+    include/view/pointCloud/cameraController.h
+    include/view/pointCloud/pointCloudDataManager.h
+    include/ros2/deviceController.h
+    include/ros2/lidar/lidarNode.h
 )
 set(CPP_FILE
     main.cpp
     src/mainwindow.cpp
-    src/view/pointcloudwidget.cpp
-    src/view/cameracontroller.cpp
-    src/ros2/devicecontroller.cpp
-    src/ros2/lidar/lidarnode.cpp
+    src/view/pointCloud/pointCloudWidget.cpp
+    src/view/pointCloud/cameraController.cpp
+    src/view/pointCloud/pointCloudDataManager.cpp
+    src/ros2/deviceController.cpp
+    src/ros2/lidar/lidarNode.cpp
 )
 set(SOURCE
     ${HPP_FILE}

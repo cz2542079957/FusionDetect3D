@@ -1,7 +1,7 @@
 #ifndef DEVICECONTROLLER_H
 #define DEVICECONTROLLER_H
 #include <QObject>
-#include "lidar/lidarnode.h"
+#include "lidar/lidarNode.h"
 
 class DeviceController : public QObject
 {

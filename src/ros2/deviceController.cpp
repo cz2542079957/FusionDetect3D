@@ -1,4 +1,4 @@
-#include "devicecontroller.h"
+#include "deviceController.h"
 
 DeviceController::DeviceController()
 {

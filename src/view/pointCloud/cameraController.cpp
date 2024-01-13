@@ -1,4 +1,6 @@
-#include "cameracontroller.h"
+#include "cameraController.h"
+
+using namespace NSPointCloud;
 
 CameraController::CameraController()
 {
@@ -167,7 +169,7 @@ void CameraController::handler()
 void CameraController::wheelActionHandler(QWheelEvent *event)
 {
     QPoint p = event->angleDelta();
-    int x =  p.x();
+    // int x =  p.x();
     int y = p.y();
     fov -=  y * wheelRate;
     if (fov < 20)
@@ -219,8 +221,8 @@ void CameraController::mousemoveActionHandler(QMouseEvent *event)
         cameraUp  = QVector3D::crossProduct(baseVector, cameraRight);
         cameraUp.normalize();
     }
-//    qDebug() << lastMousePos << " " << currentMousePos;
-//    qDebug() << baseVector << " " <<  cameraUp << " " << cameraRight;
+    //    qDebug() << lastMousePos << " " << currentMousePos;
+    //    qDebug() << baseVector << " " <<  cameraUp << " " << cameraRight;
     lastMousePos = currentMousePos;
     emit updateGraph();
 }

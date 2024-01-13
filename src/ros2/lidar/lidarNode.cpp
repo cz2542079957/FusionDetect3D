@@ -1,4 +1,4 @@
-#include "lidar/lidarnode.h"
+#include "lidar/lidarNode.h"
 
 LidarNode::LidarNode(): Node("lidarNodeSubscriber")
 {
