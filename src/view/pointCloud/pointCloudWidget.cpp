@@ -4,6 +4,7 @@ using namespace NSPointCloud;
 
 PointCloudWidget::PointCloudWidget(QWidget *parent): QOpenGLWidget(parent)
 {
+    pointCloudDataManager = new PointCloudDataManager();
     this->setGeometry(parent->rect().x(), parent->rect().y(), parent->rect().width(), parent->rect().height());
     setFocusPolicy(Qt::ClickFocus);
     //    timer.start(1);
@@ -122,7 +123,7 @@ void PointCloudWidget::initializeGL()
     glGenBuffers(1, &pointsVBO);
     glBindVertexArray(pointsVAO);
     glBindBuffer(GL_ARRAY_BUFFER, pointsVBO);
-    glBufferData(GL_ARRAY_BUFFER,  pointCloudDataManager.getMaxCacheSize() * sizeof(float), nullptr,  GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER,  pointCloudDataManager->getMaxCacheSize() * sizeof(float), nullptr,  GL_DYNAMIC_DRAW);
     shaderProgramPoints.bind();
     GLint pos3 = shaderProgramPoints.attributeLocation("aPos");
     glVertexAttribPointer(pos3, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)(0 * sizeof(float)));
@@ -184,17 +185,17 @@ void PointCloudWidget::paintGL()
 
         // todo 绘制新的点
         // RCLCPP_INFO_STREAM(rclcpp::get_logger("1"),  pointCloudDataManager.getPointNeedPaintNumber());
-        unsigned long needPaintNumber = pointCloudDataManager.getPointNeedPaintNumber();
-        glBufferSubData(GL_ARRAY_BUFFER,  (pointCloudDataManager.getCurrentCacheSize() - needPaintNumber)* sizeof(float),
+        unsigned long needPaintNumber = pointCloudDataManager->getPointNeedPaintNumber();
+        glBufferSubData(GL_ARRAY_BUFFER,  (pointCloudDataManager->getCurrentCacheSize() - needPaintNumber)* sizeof(float),
                         needPaintNumber * sizeof(float),
-                        &pointCloudDataManager.getData()[pointCloudDataManager.getCurrentCacheSize() - needPaintNumber]);
+                        &pointCloudDataManager->getData()[pointCloudDataManager->getCurrentCacheSize() - needPaintNumber]);
         shaderProgramPoints.bind();
         shaderProgramPoints.setUniformValue("model", model);
         shaderProgramPoints.setUniformValue("view", view);
         shaderProgramPoints.setUniformValue("projection", projection);
         glBindVertexArray(pointsVAO);
         glPointSize(pointSize);
-        glDrawArrays(GL_POINTS, 0, (int)(pointCloudDataManager.getCurrentCacheSize() / 6));
+        glDrawArrays(GL_POINTS, 0, (int)(pointCloudDataManager->getCurrentCacheSize() / 6));
     }
 
 }
@@ -265,7 +266,7 @@ void PointCloudWidget::recvPointsData(const sensor_msgs::msg::LaserScan::SharedP
         // RCLCPP_INFO( rclcpp::get_logger("lidarNodeSubscriber"),
         //              "positon: %8f, %8f, %8f;", x, y, z);
     }
-    pointCloudDataManager.addPoint(newPointsData);
+    pointCloudDataManager->addPoint(newPointsData);
     // for (size_t i = 0; i < msg->ranges.size() / 3; i++)
     // {
     //     std::vector<float> temp = pointCloudDataManager.getData();

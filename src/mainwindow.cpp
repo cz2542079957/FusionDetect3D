@@ -8,6 +8,8 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent), ui(new Ui::MainWin
     connect(this, SIGNAL(showMesh(bool)), ui->pointCloudWidget, SLOT(showMesh(bool)));
     connect(&this->dc, SIGNAL(sendPointsSignals(sensor_msgs::msg::LaserScan::SharedPtr)), ui->pointCloudWidget,
             SLOT(recvPointsData(sensor_msgs::msg::LaserScan::SharedPtr)));
+    connect(&this->dc, SIGNAL(sendImuDataSignals(message::msg::ImuData::SharedPtr)), ui->pointCloudWidget->pointCloudDataManager,
+            SLOT(recvImuData(message::msg::ImuData::SharedPtr)));
 
     //    //取消标题栏
     //    this->setWindowFlags(Qt::FramelessWindowHint);

@@ -13,11 +13,12 @@ include_directories(
     ${ROS2_INCLUDE}
 )
 # 引入ros2相关包
+list(APPEND CMAKE_PREFIX_PATH "/home/chenzhen/Desktop/ros2_ws/install/message")
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
-
+find_package(message REQUIRED)
 
 
 ###################################################################################
@@ -56,39 +57,30 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/include/view/infoTree
     ${CMAKE_CURRENT_SOURCE_DIR}/include/ros2
     ${CMAKE_CURRENT_SOURCE_DIR}/res
-
 )
 list(APPEND CMAKE_AUTOUIC_SEARCH_PATHS "src/ui")
-set(HPP_FILE
-    include/utils.h
-    include/mainwindow.h
-    include/view/pointCloud/pointCloudWidget.h
-    include/view/pointCloud/cameraController.h
-    include/view/pointCloud/pointCloudDataManager.h
-    include/view/infoTree/infoTree.h
-    include/ros2/deviceController.h
-    include/ros2/lidar/lidarNode.h
-)
-set(CPP_FILE
-    main.cpp
-    src/mainwindow.cpp
-    src/view/pointCloud/pointCloudWidget.cpp
-    src/view/pointCloud/cameraController.cpp
-    src/view/pointCloud/pointCloudDataManager.cpp
-    src/view/infoTree/infoTree.cpp
-    src/ros2/deviceController.cpp
-    src/ros2/lidar/lidarNode.cpp
-)
-set(SOURCE
-    ${HPP_FILE}
-    ${CPP_FILE}
-    src/ui/mainwindow.ui
 
+FILE(GLOB SOURCE
+    "include/*.h"
+    "include/view/*.h"
+    "include/view/infoTree/*.h"
+    "include/view/pointCloud/*.h"
+    "include/ros2/*.h"
+    "include/ros2/lidar/*.h"
+    "include/ros2/imu/*.h"
+    "src/*.cpp"
+    "src/view/*.cpp"
+    "src/view/infoTree/*.cpp"
+    "src/view/pointCloud/*.cpp"
+    "src/ros2/*.cpp"
+    "src/ros2/lidar/*.cpp"
+    "src/ros2/imu/*.cpp"
+    main.cpp
     res/res.qrc
 )
 add_executable(main ${SOURCE})
 # ros2 依赖
-set(ROS2_DEPENDENCIES rclcpp rcl std_msgs sensor_msgs)
+set(ROS2_DEPENDENCIES rclcpp rcl std_msgs sensor_msgs message)
 # qt6 依赖
 set(QT6_DEPENDENCIES Qt6::Widgets Qt6::OpenGLWidgets)
 target_link_libraries(main

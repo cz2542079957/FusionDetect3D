@@ -1,17 +1,20 @@
 #ifndef POINTCLOUDDATAMANAGER_H
 #define POINTCLOUDDATAMANAGER_H
 #include  "vector"
+#include "QObject"
 #include "rclcpp/rclcpp.hpp"
 #include  "pointCloudBase.h"
 #include  "sensor_msgs/msg/laser_scan.hpp"
+#include "message/msg/imu_data.hpp"
 
 namespace NSPointCloud
 {
 
 #define DEFAUTL_MAX_CACHE_SIZE 6 * 1024 * 50
 
-    class PointCloudDataManager
+    class PointCloudDataManager: public QObject
     {
+        Q_OBJECT
     public:
         PointCloudDataManager(int _maxSize = DEFAUTL_MAX_CACHE_SIZE);
 
@@ -19,8 +22,6 @@ namespace NSPointCloud
         // bool addPoint();
         //接受不带颜色的节点
         bool addPoint(std::vector<float> _newData);
-        //接受坐标
-        bool addPoint(float _x, float _y, float _z);
         //最大缓存
         unsigned long getMaxCacheSize() const;
         void setMaxCacheSize(unsigned long newMaxCacheSize);
@@ -45,6 +46,7 @@ namespace NSPointCloud
         //每一批数据的大小
         std::vector<unsigned long>  batchSize;
 
+
         //处理点的颜色
         void handlePointsColor();
         //点颜色的层次数
@@ -52,6 +54,13 @@ namespace NSPointCloud
         //新旧点颜色
         float redNew =  255,  greenNew  =  31, blueNew = 0;
         float redOld = 28, greenOld = 126, blueOld = 214;
+
+    public slots:
+        //拿到点云数据
+        void recvPointsData(const sensor_msgs::msg::LaserScan::SharedPtr msg);
+        //拿到惯导数据
+        void recvImuData(const message::msg::ImuData::SharedPtr msg);
+
     };
 }
 

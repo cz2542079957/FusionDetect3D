@@ -18,7 +18,8 @@ namespace NSPointCloud
     public:
         explicit PointCloudWidget(QWidget *parent = nullptr);
         ~PointCloudWidget();
-
+        // 点云数据管理器
+        PointCloudDataManager *pointCloudDataManager;
 
     private :
         //相机控制器
@@ -72,7 +73,6 @@ namespace NSPointCloud
         //点大小
         float pointSize = 3;
         //点云数据
-        PointCloudDataManager pointCloudDataManager;
         std::vector<float> pointsData;
         int oldSize = 0;
 
@@ -104,6 +104,7 @@ namespace NSPointCloud
         //绘制地平线网格
         void drawMesh(int rowBegin, int  rows, int  columnBegin, int  columns);
 
+        //todo 转移到pointclouddatamanager中
         //拿到点云数据
         void recvPointsData(const sensor_msgs::msg::LaserScan::SharedPtr msg);
 

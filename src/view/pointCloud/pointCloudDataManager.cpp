@@ -30,19 +30,6 @@ bool PointCloudDataManager::addPoint(std::vector<float> _newData)
     return true;
 }
 
-bool PointCloudDataManager::addPoint(float x, float y, float z)
-{
-    // TODO
-    // data.push_back(x);
-    // data.push_back(y);
-    // data.push_back(z);
-    // if (data.size() >= currentBufferSize)
-    // {
-    //     extendBuffer();
-    // }
-    return true;
-}
-
 unsigned long PointCloudDataManager::getMaxCacheSize() const
 {
     return maxCacheSize;
@@ -108,3 +95,14 @@ unsigned long PointCloudDataManager::getPointNeedPaintNumber()
     }
     return length;
 }
+
+void PointCloudDataManager::recvPointsData(const sensor_msgs::msg::LaserScan::SharedPtr msg)
+{
+
+}
+
+void PointCloudDataManager::recvImuData(const message::msg::ImuData::SharedPtr msg)
+{
+
+}
+

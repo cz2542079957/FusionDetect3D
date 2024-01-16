@@ -1,13 +1,13 @@
 #ifndef LIDARNODE_H
 #define LIDARNODE_H
-#include "rclcpp/rclcpp.hpp"
-#include "sensor_msgs/msg/laser_scan.hpp"
+#include <rclcpp/rclcpp.hpp>
+#include <sensor_msgs/msg/laser_scan.hpp>
 
 class LidarNode: public rclcpp::Node
 {
 public:
     LidarNode();
-    void setCallback(std::function<void(const sensor_msgs::msg::LaserScan::SharedPtr msg)>);
+    void setCallback(std::function<void(const sensor_msgs::msg::LaserScan::SharedPtr msg)> call);
     void run();
 
 private:

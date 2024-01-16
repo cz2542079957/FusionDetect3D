@@ -209,18 +209,20 @@ void CameraController::mousemoveActionHandler(QMouseEvent *event)
     int rightDelta = currentMousePos.x() - lastMousePos.x();
     int upDelta = lastMousePos.y()  - currentMousePos.y();
 
-    if (rightDelta != 0)
-    {
-        baseVector = rotateAboutAxis(baseVector, cameraUp, rightDelta *  rotateSpeed);
-        cameraRight = QVector3D::crossProduct(cameraUp, baseVector);
-        cameraRight.normalize();
-    }
+
     if (upDelta != 0)
     {
         baseVector = rotateAboutAxis(baseVector,  cameraRight, upDelta *  rotateSpeed);
         cameraUp  = QVector3D::crossProduct(baseVector, cameraRight);
         cameraUp.normalize();
     }
+    if (rightDelta != 0)
+    {
+        baseVector = rotateAboutAxis(baseVector, cameraUp, rightDelta *  rotateSpeed);
+        cameraRight = QVector3D::crossProduct(cameraUp, baseVector);
+        cameraRight.normalize();
+    }
+    // qDebug() << cameraUp;
     //    qDebug() << lastMousePos << " " << currentMousePos;
     //    qDebug() << baseVector << " " <<  cameraUp << " " << cameraRight;
     lastMousePos = currentMousePos;
