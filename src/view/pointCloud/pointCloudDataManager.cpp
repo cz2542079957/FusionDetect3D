@@ -11,6 +11,8 @@ PointCloudDataManager::PointCloudDataManager(int _maxCacheSize)
 
 bool PointCloudDataManager::addPoint(std::vector<float> _newData)
 {
+    // RCLCPP_INFO_STREAM( rclcpp::get_logger("lidarNodeSubscriber"),
+    //                     _newData.size());
     //渲染之前的点的颜色
     handlePointsColor();
     unsigned long offset = 0;
@@ -96,13 +98,6 @@ unsigned long PointCloudDataManager::getPointNeedPaintNumber()
     return length;
 }
 
-void PointCloudDataManager::recvPointsData(const sensor_msgs::msg::LaserScan::SharedPtr msg)
-{
 
-}
 
-void PointCloudDataManager::recvImuData(const message::msg::ImuData::SharedPtr msg)
-{
-
-}
 

@@ -1,6 +1,9 @@
 #ifndef POINTCLOUDBASE_H
 #define POINTCLOUDBASE_H
 #include <QVector3D>
+#include "rclcpp/rclcpp.hpp"
+#include "message/msg/lidar_data.hpp"
+#include "message/msg/imu_data.hpp"
 
 namespace NSPointCloud
 {

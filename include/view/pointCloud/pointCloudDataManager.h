@@ -2,15 +2,12 @@
 #define POINTCLOUDDATAMANAGER_H
 #include  "vector"
 #include "QObject"
-#include "rclcpp/rclcpp.hpp"
-#include  "pointCloudBase.h"
-#include  "sensor_msgs/msg/laser_scan.hpp"
-#include "message/msg/imu_data.hpp"
+#include "pointCloudBase.h"
 
 namespace NSPointCloud
 {
 
-#define DEFAUTL_MAX_CACHE_SIZE 6 * 1024 * 50
+#define DEFAUTL_MAX_CACHE_SIZE 6 * 1024 * 5000
 
     class PointCloudDataManager: public QObject
     {
@@ -50,17 +47,12 @@ namespace NSPointCloud
         //处理点的颜色
         void handlePointsColor();
         //点颜色的层次数
-        int colorLevel = 16;
+        int colorLevel = 10;
         //新旧点颜色
         float redNew =  255,  greenNew  =  31, blueNew = 0;
         float redOld = 28, greenOld = 126, blueOld = 214;
 
     public slots:
-        //拿到点云数据
-        void recvPointsData(const sensor_msgs::msg::LaserScan::SharedPtr msg);
-        //拿到惯导数据
-        void recvImuData(const message::msg::ImuData::SharedPtr msg);
-
     };
 }
 

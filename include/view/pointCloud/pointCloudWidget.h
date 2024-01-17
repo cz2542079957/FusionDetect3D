@@ -56,9 +56,9 @@ namespace NSPointCloud
         bool enableMesh = true;
         unsigned meshVAO, meshVBO ;
         QOpenGLShaderProgram shaderProgramMesh;
-        //网格单位长度
+        //网格单位长度(2)
         float meshLength =  0.2;
-        //网格线宽
+        //网格线宽(m)
         float meshWidth = 2.0;
         //网格线数量
         unsigned int meshLinesCount = 0;
@@ -104,10 +104,10 @@ namespace NSPointCloud
         //绘制地平线网格
         void drawMesh(int rowBegin, int  rows, int  columnBegin, int  columns);
 
-        //todo 转移到pointclouddatamanager中
         //拿到点云数据
-        void recvPointsData(const sensor_msgs::msg::LaserScan::SharedPtr msg);
-
+        void recvPointsData(const message::msg::LidarData::SharedPtr msg);
+        //拿到惯导数据
+        void recvImuData(const message::msg::ImuData::SharedPtr msg);
     };
 }
 

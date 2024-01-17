@@ -4,9 +4,9 @@ LidarNode::LidarNode(): Node("lidarNodeSubscriber")
 {
 }
 
-void LidarNode::setCallback(std::function<void(const sensor_msgs::msg::LaserScan::SharedPtr msg)> call)
+void LidarNode::setCallback(std::function<void(const message::msg::LidarData::SharedPtr msg)> call)
 {
-    subscription = this->create_subscription<sensor_msgs::msg::LaserScan>(nodePrefix + "/lidarScan", rclcpp::QoS(rclcpp::KeepLast(10)), call);
+    subscription = this->create_subscription<message::msg::LidarData>(nodePrefix + "/lidarScan", rclcpp::QoS(rclcpp::KeepLast(10)), call);
 
 }
 
