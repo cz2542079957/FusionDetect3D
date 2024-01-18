@@ -105,9 +105,9 @@ namespace NSPointCloud
         void drawMesh(int rowBegin, int  rows, int  columnBegin, int  columns);
 
         //拿到点云数据
-        void recvPointsData(const message::msg::LidarData::SharedPtr msg);
+        void recvPointsData(message::msg::LidarData::SharedPtr msg);
         //拿到惯导数据
-        void recvImuData(const message::msg::ImuData::SharedPtr msg);
+        void recvImuData(message::msg::ImuData::SharedPtr msg);
     };
 }
 

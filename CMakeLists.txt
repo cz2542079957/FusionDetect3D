@@ -30,6 +30,7 @@ list(APPEND CMAKE_PREFIX_PATH ${QT_PATH})
 set(QT_INCLUDE ${QT_PATH}/include)
 include_directories(
     ${QT_INCLUDE}
+    ${EIGEN3_INCLUDE_DIR}
 )
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOUIC ON)
@@ -37,7 +38,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 #引入Qt6相关包
 find_package(Qt6 REQUIRED COMPONENTS Widgets OpenGLWidgets)
-
+find_package(Eigen3 REQUIRED)
 
 
 ###################################################################################

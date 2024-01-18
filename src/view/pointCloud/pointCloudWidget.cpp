@@ -246,44 +246,17 @@ void PointCloudWidget::drawMesh(int rowBegin, int  rows, int  columnBegin, int  
     //    qDebug() << meshData;
 }
 
-void PointCloudWidget::recvPointsData(const message::msg::LidarData::SharedPtr msg)
+void PointCloudWidget::recvPointsData(message::msg::LidarData::SharedPtr msg)
 {
-    std::vector<float> newPointsData;
-    for (size_t i = 0; i < msg->data.size(); i++)
-    {
-        if (msg->data[i].distance == 0)
-        {
-            continue;
-        }
-        //将角度距离数据解析为空间坐标
-        float x, y, z;
-        float rad = msg->data[i].angle * M_PI / 180.0f  ;
-        // RCLCPP_INFO( rclcpp::get_logger("lidarNodeSubscriber"), "angle: %12f; dis: %12d", msg->data[i].angle, msg->data[i].distance);
-        x = std::cos(rad) * msg->data[i].distance;
-        y = std::sin(rad) * msg->data[i].distance;
-        z = 0;
-        newPointsData.push_back(x);
-        newPointsData.push_back(y);
-        newPointsData.push_back(z);
-        // RCLCPP_INFO( rclcpp::get_logger("lidarNodeSubscriber"), "positon: %8f, %8f, %8f;", x, y, z);
-    }
-    pointCloudDataManager->addPoint(newPointsData);
-    // for (size_t i = 0; i < msg->data.size() / 3; i++)
-    // {
-    // int i = 0;
-    // std::vector<float> temp = pointCloudDataManager->getData();
-    // RCLCPP_INFO_STREAM(rclcpp::get_logger("lidarNodeSubscriber"), temp[i + 0] <<
-    //                    " ," << temp[i + 1] <<
-    //                    " ," << temp[i + 2] <<
-    //                    " ," << temp[i + 3] <<
-    //                    " ," << temp[i + 4] <<
-    //                    " ," << temp[i + 5]  );
-    // }
+    pointCloudDataManager->addPoint(msg);
     update();
 }
 
-void PointCloudWidget::recvImuData(const message::msg::ImuData::SharedPtr msg)
+void PointCloudWidget::recvImuData(message::msg::ImuData::SharedPtr msg)
 {
-
-    RCLCPP_INFO_STREAM(rclcpp::get_logger("PointCloud"),  msg->data[0].temperature);
+    pointCloudDataManager->addImuData(msg);
+    // for (int i = 0 ; i < msg->data.size();  i ++)
+    // {
+    //     RCLCPP_INFO_STREAM(rclcpp::get_logger("PointCloud"),  msg->data[i].timestemp);
+    // }
 }
