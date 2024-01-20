@@ -5,18 +5,11 @@ using namespace NSPointCloud;
 PointCloudWidget::PointCloudWidget(QWidget *parent): QOpenGLWidget(parent)
 {
     pointCloudDataManager = new PointCloudDataManager();
+    connect(pointCloudDataManager, SIGNAL(updateGraph()), this, SLOT(update()));
+    connect(&camera, SIGNAL(updateGraph()), this, SLOT(update()));
+
     this->setGeometry(parent->rect().x(), parent->rect().y(), parent->rect().width(), parent->rect().height());
     setFocusPolicy(Qt::ClickFocus);
-    //    timer.start(1);
-    connect(&timer, SIGNAL(timeout()), this, SLOT(onTimeout()));
-    connect(&camera, SIGNAL(updateGraph()), this, SLOT(update()));
-    //    connect(&camera, SIGNAL())
-    //    qDebug() << camera.getBasePos();
-    //    qDebug() << camera.getBaseDirection();
-    //    qDebug() << camera.getBaseVector();
-    //    qDebug() << camera.getBaseUp();
-    //    qDebug() << camera.getCameraRight();
-    //    qDebug() << camera.getCameraUp();
 }
 
 PointCloudWidget::~PointCloudWidget()
@@ -123,13 +116,13 @@ void PointCloudWidget::initializeGL()
     glGenBuffers(1, &pointsVBO);
     glBindVertexArray(pointsVAO);
     glBindBuffer(GL_ARRAY_BUFFER, pointsVBO);
-    glBufferData(GL_ARRAY_BUFFER,  pointCloudDataManager->getMaxCacheSize() * sizeof(float), nullptr,  GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER,  pointCloudDataManager->getMaxCacheSize() * sizeof(PointCloudVertex), nullptr,  GL_DYNAMIC_DRAW);
     shaderProgramPoints.bind();
     GLint pos3 = shaderProgramPoints.attributeLocation("aPos");
-    glVertexAttribPointer(pos3, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)(0 * sizeof(float)));
+    glVertexAttribPointer(pos3, 3, GL_FLOAT, GL_FALSE, sizeof(PointCloudVertex),  (void *)0);
     glEnableVertexAttribArray(pos3);
     GLint gPointColor = shaderProgramPoints.attributeLocation("aColor");
-    glVertexAttribPointer(gPointColor, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)(3 * sizeof(float)));
+    glVertexAttribPointer(gPointColor, 3, GL_FLOAT, GL_FALSE, sizeof(PointCloudVertex),   (void *)offsetof(PointCloudVertex, red));
     glEnableVertexAttribArray(gPointColor);
 
     //释放
@@ -179,25 +172,23 @@ void PointCloudWidget::paintGL()
     //渲染点云
     if (enablePoints)
     {
-        // RCLCPP_INFO_STREAM( rclcpp::get_logger("lidarNodeSubscriber"), pointCloudDataManager.getLastDataSize() << " ," <<  pointCloudDataManager.getCurrentCacheSize());
         glBindVertexArray(pointsVAO);
         glBindBuffer(GL_ARRAY_BUFFER, pointsVBO);
-
-        // todo 绘制新的点
-        // RCLCPP_INFO_STREAM(rclcpp::get_logger("1"),  pointCloudDataManager->getPointNeedPaintNumber());
-        unsigned long needPaintNumber = pointCloudDataManager->getPointNeedPaintNumber();
-        glBufferSubData(GL_ARRAY_BUFFER,  (pointCloudDataManager->getCurrentCacheSize() - needPaintNumber)* sizeof(float),
-                        needPaintNumber * sizeof(float),
-                        &pointCloudDataManager->getData()[pointCloudDataManager->getCurrentCacheSize() - needPaintNumber]);
+        // RCLCPP_INFO_STREAM(rclcpp::get_logger("1"),  pointCloudDataManager->getPointNeedDrawNumber());
+        // RCLCPP_INFO_STREAM( rclcpp::get_logger("lidarNodeSubscriber"),
+        //                     pointCloudDataManager -> getCurrentCacheSize() * 2  << " ," << needPaintNumber);
+        unsigned long needPaintNumber = pointCloudDataManager->getPointNeedDrawNumber();
+        unsigned long offset =  pointCloudDataManager->getCurrentCacheSize() - needPaintNumber;
+        glBufferSubData(GL_ARRAY_BUFFER, offset * sizeof(PointCloudVertex),
+                        pointCloudDataManager->getPointNeedDrawNumber() * sizeof(PointCloudVertex),
+                        &pointCloudDataManager->getData()[offset]);
         shaderProgramPoints.bind();
         shaderProgramPoints.setUniformValue("model", model);
         shaderProgramPoints.setUniformValue("view", view);
         shaderProgramPoints.setUniformValue("projection", projection);
-        glBindVertexArray(pointsVAO);
         glPointSize(pointSize);
-        glDrawArrays(GL_POINTS, 0, (int)(pointCloudDataManager->getCurrentCacheSize() / 6));
+        glDrawArrays(GL_POINTS, 0, pointCloudDataManager->getCurrentCacheSize());
     }
-
 }
 
 void PointCloudWidget::onTimeout()
@@ -246,17 +237,18 @@ void PointCloudWidget::drawMesh(int rowBegin, int  rows, int  columnBegin, int  
     //    qDebug() << meshData;
 }
 
+void PointCloudWidget::clearPointCloud()
+{
+    pointCloudDataManager->clearData();
+    update();
+}
+
 void PointCloudWidget::recvPointsData(message::msg::LidarData::SharedPtr msg)
 {
     pointCloudDataManager->addPoint(msg);
-    update();
 }
 
 void PointCloudWidget::recvImuData(message::msg::ImuData::SharedPtr msg)
 {
     pointCloudDataManager->addImuData(msg);
-    // for (int i = 0 ; i < msg->data.size();  i ++)
-    // {
-    //     RCLCPP_INFO_STREAM(rclcpp::get_logger("PointCloud"),  msg->data[i].timestemp);
-    // }
 }

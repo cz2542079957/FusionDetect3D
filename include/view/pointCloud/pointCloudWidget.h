@@ -71,7 +71,7 @@ namespace NSPointCloud
         unsigned pointsVAO, pointsVBO;
         QOpenGLShaderProgram shaderProgramPoints;
         //点大小
-        float pointSize = 3;
+        float pointSize = 2;
         //点云数据
         std::vector<float> pointsData;
         int oldSize = 0;
@@ -103,6 +103,8 @@ namespace NSPointCloud
         void showMesh(bool val);
         //绘制地平线网格
         void drawMesh(int rowBegin, int  rows, int  columnBegin, int  columns);
+        //清空点云
+        void clearPointCloud();
 
         //拿到点云数据
         void recvPointsData(message::msg::LidarData::SharedPtr msg);

@@ -6,6 +6,7 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent), ui(new Ui::MainWin
     ui->setupUi(this);
     connect(this, SIGNAL(showAxis(bool)), ui->pointCloudWidget, SLOT(showAxis(bool)));
     connect(this, SIGNAL(showMesh(bool)), ui->pointCloudWidget, SLOT(showMesh(bool)));
+    connect(this, SIGNAL(clearPointCloud()), ui->pointCloudWidget, SLOT(clearPointCloud()));
     connect(&this->dc, SIGNAL(sendPointsSignals(message::msg::LidarData::SharedPtr)), ui->pointCloudWidget,
             SLOT(recvPointsData(message::msg::LidarData::SharedPtr)));
     connect(&this->dc, SIGNAL(sendImuDataSignals(message::msg::ImuData::SharedPtr)), ui->pointCloudWidget,
@@ -46,5 +47,12 @@ void MainWindow::on_showAxis_clicked()
     {
         emit showAxis(false);
     }
+}
+
+
+
+void MainWindow::on_clearPointCloud_clicked()
+{
+    emit clearPointCloud();
 }
 

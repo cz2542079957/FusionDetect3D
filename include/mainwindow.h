@@ -28,10 +28,12 @@ private:
 signals:
     void showAxis(bool val);
     void showMesh(bool val);
+    void clearPointCloud();
 
 private slots:
     void on_showMesh_clicked();
     void on_showAxis_clicked();
 
+    void on_clearPointCloud_clicked();
 };
 #endif // MAINWINDOW_H
