@@ -56,7 +56,7 @@ namespace NSPointCloud
         bool enableMesh = true;
         unsigned meshVAO, meshVBO ;
         QOpenGLShaderProgram shaderProgramMesh;
-        //网格单位长度(2)
+        //网格单位长度(m)
         float meshLength =  0.2;
         //网格线宽(m)
         float meshWidth = 2.0;
@@ -72,9 +72,6 @@ namespace NSPointCloud
         QOpenGLShaderProgram shaderProgramPoints;
         //点大小
         float pointSize = 2;
-        //点云数据
-        std::vector<float> pointsData;
-        int oldSize = 0;
 
 
         //按键监听

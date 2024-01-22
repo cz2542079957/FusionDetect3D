@@ -4,11 +4,14 @@ using namespace NSPointCloud;
 
 PointCloudDataManager::PointCloudDataManager(int _maxCacheSize)
 {
+    pointsBuffer.reserve(maxPointsBufferSize);
+    imuDataBuffer.reserve(maxImuDataBufferSize);
     maxCacheSize = _maxCacheSize;
     data.reserve(_maxCacheSize);
+
     //定时任务
     connect(&this->timer, SIGNAL(timeout()),  this,  SLOT(scheduledTask()));
-    timer.start(std::chrono::milliseconds(100));
+    timer.start(std::chrono::milliseconds(tsakTimeInterval));
 }
 
 bool PointCloudDataManager::addPoint(message::msg::LidarData::SharedPtr &_newData)
@@ -20,17 +23,64 @@ bool PointCloudDataManager::addPoint(message::msg::LidarData::SharedPtr &_newDat
 bool PointCloudDataManager::addImuData(message::msg::ImuData::SharedPtr &_newData)
 {
     imuDataBuffer.insert(imuDataBuffer.end(), _newData->data.begin(), _newData->data.end());
+    for (size_t i = 0 ; i < _newData->data.size() ; i++)
+    {
+        float ang2radCoe = M_PI / 180.0f;
+        static Eigen::Vector3d velocity(0, 0, 0);
+        static Eigen::Vector3d position(0, 0, 0);
+        // 根据设备姿态计算重力在传感器坐标系下的分量
+        Eigen::Vector3d gravity_in_sensor_frame;
+        gravity_in_sensor_frame << 0, 0, -9.81;  // 重力矢量（指向地球中心）
+        double dt = 0.01;
+        // 将欧拉角转换为旋转矩阵
+        Eigen::Matrix3d rotation_matrix;
+        rotation_matrix =  Eigen::AngleAxisd(_newData->data[i].angular.roll * ang2radCoe, Eigen::Vector3d::UnitX())
+                           *   Eigen::AngleAxisd(_newData->data[i].angular.pitch * ang2radCoe, Eigen::Vector3d::UnitY())
+                           *  Eigen::AngleAxisd(_newData->data[i].angular.yaw * ang2radCoe, Eigen::Vector3d::UnitZ());
+        Eigen::Vector3d gravity_compensation = rotation_matrix * gravity_in_sensor_frame;
+        gravity_compensation.z() = -gravity_compensation.z();
+
+        Eigen::Vector3d acceleration = {_newData->data[i].acceleration.acceleration_x,
+                                        _newData->data[i].acceleration.acceleration_y,
+                                        _newData->data[i].acceleration.acceleration_z,
+                                       }  ;
+        // RCLCPP_INFO(rclcpp::get_logger("main"), "        angular:  %10f , %10f , %10f",  _newData->data[i].angular.roll, _newData->data[i].angular.pitch,
+        //             _newData->data[i].angular.yaw);
+        // RCLCPP_INFO(rclcpp::get_logger("main"), "        acceleration： %10f , %10f , %10f", acceleration.x(), acceleration.y(), acceleration.z());
+        // RCLCPP_INFO(rclcpp::get_logger("main"), "gravity_compensation： %10f , %10f , %10f",
+        // gravity_compensation.x(), gravity_compensation.y(), gravity_compensation.z());
+
+        Eigen::Vector3d corrected_acceleration = acceleration - gravity_compensation;
+
+        // RCLCPP_INFO(rclcpp::get_logger("main"), " corrected_acceleration： %10f , %10f , %10f",
+        // corrected_acceleration.x(), corrected_acceleration.y(), corrected_acceleration.z());
+
+        Eigen::Vector3d world_acceleration = rotation_matrix.transpose() * corrected_acceleration;
+
+        // 积分得到速度和位移
+        velocity += world_acceleration * dt;
+        position += velocity * dt;
+
+        // RCLCPP_INFO(rclcpp::get_logger("main"), "     world_acceleration： %10.4f , %10.4f , %10.4f",
+        //             world_acceleration.x(), world_acceleration.y(), world_acceleration.z());
+        // RCLCPP_INFO(rclcpp::get_logger("main"), "velocity : %10f , %10f , %10f", velocity.x(), velocity.y(), velocity.z());
+        // RCLCPP_INFO(rclcpp::get_logger("main"), "Position : %10f , %10f , %10f", position.x(), position.y(), position.z());
+        // std::cout << "velocity: (" << velocity.x() << ", " << velocity.y() << ", " << velocity.z() << ")" << std::endl;
+        // std::cout << "Position: (" << position.x() << ", " << position.y() << ", " << position.z() << ")" << std::endl;
+    }
     return true;
 }
+
 
 unsigned long PointCloudDataManager::getMaxCacheSize() const
 {
     return maxCacheSize;
 }
 
-void PointCloudDataManager::setMaxCacheSize(unsigned long _maxCacheSize)
+void PointCloudDataManager::setMaxCacheSize(unsigned long _newMaxCacheSize)
 {
-    maxCacheSize = _maxCacheSize;
+    maxCacheSize = _newMaxCacheSize;
+    data.reserve(maxCacheSize);
 }
 
 const std::vector<PointCloudVertex> &PointCloudDataManager::getData() const
@@ -64,7 +114,6 @@ unsigned long PointCloudDataManager::getPointNeedDrawNumber()
 
 void PointCloudDataManager::scheduledTask()
 {
-    // RCLCPP_INFO(rclcpp::get_logger("main"), "%ld, %ld",  pointsBuffer.size(), imuDataBuffer.size());
     bool updateFlag = false;
     //数据融合
     updateFlag |= fuseData();
@@ -72,7 +121,6 @@ void PointCloudDataManager::scheduledTask()
     updateFlag |= handlePointsColor();
     if (updateFlag)
     {
-        RCLCPP_INFO(rclcpp::get_logger("main"), "update");
         emit updateGraph();
     }
 }

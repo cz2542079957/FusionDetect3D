@@ -4,12 +4,9 @@ using namespace NSPointCloud;
 
 CameraController::CameraController()
 {
-    baseVector = QVector3D(baseDirection - basePos);
-    baseVector.normalize();
-    cameraRight  =  QVector3D::crossProduct(baseUp, baseVector);
-    cameraRight.normalize();
-    cameraUp  = QVector3D::crossProduct(baseVector, cameraRight);
-    cameraUp.normalize();
+    baseVector = (baseDirection - basePos).normalized();
+    cameraRight = QVector3D::crossProduct(baseUp, baseVector).normalized();
+    cameraUp = QVector3D::crossProduct(baseVector, cameraRight).normalized();
 
     connect(&timer, SIGNAL(timeout()), this, SLOT(handler()));
 }
@@ -83,14 +80,111 @@ void CameraController::setBaseVector(const QVector3D &newBaseVector)
     baseVector = newBaseVector;
 }
 
-float CameraController::getSpeed() const
+
+
+float CameraController::getFov() const
 {
-    return moveSpeed;
+    return fov;
 }
 
-void CameraController::setSpeed(float newSpeed)
+float CameraController::getBaseSpeed() const
 {
-    moveSpeed = newSpeed;
+    return baseSpeed;
+}
+
+void CameraController::setBaseSpeed(float newBaseSpeed)
+{
+    baseSpeed = newBaseSpeed;
+}
+
+float CameraController::getMoveSpeed() const
+{
+    return moveSpeed * baseSpeed;
+}
+
+void CameraController::setMoveSpeed(float newMoveSpeed)
+{
+    moveSpeed = newMoveSpeed;
+}
+
+float CameraController::getRollSpeed() const
+{
+    return rollSpeed * baseSpeed;
+}
+
+void CameraController::setRollSpeed(float newRollSpeed)
+{
+    rollSpeed = newRollSpeed;
+}
+
+float CameraController::getWheelRate() const
+{
+    return wheelRate * baseSpeed;
+}
+
+void CameraController::setWheelRate(float newWheelRate)
+{
+    wheelRate = newWheelRate;
+}
+
+float CameraController::getRotateSpeed() const
+{
+    return rotateSpeed * baseSpeed;
+}
+
+void CameraController::setRotateSpeed(float newRotateSpeed)
+{
+    rotateSpeed = newRotateSpeed;
+}
+
+
+
+void CameraController::handler()
+{
+    foreach (auto k, keys)
+    {
+        switch (k)
+        {
+            //前
+            case Qt::Key_W:
+                basePosAdd(getMoveSpeed() * baseVector);
+                break;
+            //后
+            case Qt::Key_S:
+                basePosAdd(-getMoveSpeed() * baseVector);
+                break;
+            //左
+            case Qt::Key_A:
+                basePosAdd(getMoveSpeed() * cameraRight);
+                break;
+            //右
+            case Qt::Key_D:
+                basePosAdd(-getMoveSpeed() * cameraRight);
+                break;
+            //向右滚筒
+            case Qt::Key_E:
+                cameraUp = rotateAboutAxis(cameraUp,  baseVector, M_PI * getRollSpeed());
+                cameraRight = rotateAboutAxis(cameraRight,  baseVector, M_PI * getRollSpeed());
+                break;
+            //向左滚筒
+            case Qt::Key_Q:
+                cameraUp = rotateAboutAxis(cameraUp,  baseVector, -M_PI * getRollSpeed());
+                cameraRight = rotateAboutAxis(cameraRight,  baseVector, -M_PI * getRollSpeed());
+                break;
+            //上升
+            case Qt::Key_Shift:
+                basePosAdd(getMoveSpeed() * cameraUp);
+                break;
+            //下降
+            case Qt::Key_Control:
+                basePosAdd(-getMoveSpeed() * cameraUp);
+                break;
+            //功能键
+            case Qt::Key_V:
+                break;
+        }
+    }
+    emit updateGraph();
 }
 
 void CameraController::keypressActionHandler(QKeyEvent *event)
@@ -117,61 +211,12 @@ void CameraController::keyreleaseActionHandler(QKeyEvent *event)
     }
 }
 
-void CameraController::handler()
-{
-    foreach (auto k, keys)
-    {
-        switch (k)
-        {
-            //前
-            case Qt::Key_W:
-                basePosAdd(moveSpeed * baseVector);
-                break;
-            //后
-            case Qt::Key_S:
-                basePosAdd(-moveSpeed * baseVector);
-                break;
-            //左
-            case Qt::Key_A:
-                basePosAdd(moveSpeed * cameraRight);
-                break;
-            //右
-            case Qt::Key_D:
-                basePosAdd(-moveSpeed * cameraRight);
-                break;
-            //向右滚筒
-            case Qt::Key_E:
-                cameraUp = rotateAboutAxis(cameraUp,  baseVector, M_PI * rollSpeed);
-                cameraRight = rotateAboutAxis(cameraRight,  baseVector, M_PI * rollSpeed);
-                break;
-            //向左滚筒
-            case Qt::Key_Q:
-                cameraUp = rotateAboutAxis(cameraUp,  baseVector, -M_PI * rollSpeed);
-                cameraRight = rotateAboutAxis(cameraRight,  baseVector, -M_PI * rollSpeed);
-                break;
-            //上升
-            case Qt::Key_Shift:
-                basePosAdd(moveSpeed * cameraUp);
-                break;
-            //下降
-            case Qt::Key_Control:
-                basePosAdd(-moveSpeed * cameraUp);
-                break;
-            //功能键
-            case Qt::Key_V:
-                break;
-        }
-    }
-    emit updateGraph();
-
-}
-
 void CameraController::wheelActionHandler(QWheelEvent *event)
 {
     QPoint p = event->angleDelta();
     // int x =  p.x();
     int y = p.y();
-    fov -=  y * wheelRate;
+    fov -=  y * getWheelRate();
     if (fov < 20)
     {
         fov = 20;
@@ -181,11 +226,6 @@ void CameraController::wheelActionHandler(QWheelEvent *event)
         fov = 90;
     }
     emit updateGraph();
-}
-
-float CameraController::getFov() const
-{
-    return fov;
 }
 
 void CameraController::mousepressActionHandler(QMouseEvent *event)
@@ -212,15 +252,13 @@ void CameraController::mousemoveActionHandler(QMouseEvent *event)
 
     if (upDelta != 0)
     {
-        baseVector = rotateAboutAxis(baseVector,  cameraRight, upDelta *  rotateSpeed);
-        cameraUp  = QVector3D::crossProduct(baseVector, cameraRight);
-        cameraUp.normalize();
+        baseVector = rotateAboutAxis(baseVector,  cameraRight, upDelta *  getRotateSpeed());
+        cameraUp = QVector3D::crossProduct(baseVector, cameraRight).normalized();
     }
     if (rightDelta != 0)
     {
-        baseVector = rotateAboutAxis(baseVector, cameraUp, rightDelta *  rotateSpeed);
-        cameraRight = QVector3D::crossProduct(cameraUp, baseVector);
-        cameraRight.normalize();
+        baseVector = rotateAboutAxis(baseVector, cameraUp, rightDelta *  getRotateSpeed());
+        cameraRight = QVector3D::crossProduct(cameraUp, baseVector).normalized();
     }
     // qDebug() << cameraUp;
     //    qDebug() << lastMousePos << " " << currentMousePos;
