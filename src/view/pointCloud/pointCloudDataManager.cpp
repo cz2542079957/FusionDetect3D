@@ -23,51 +23,6 @@ bool PointCloudDataManager::addPoint(message::msg::LidarData::SharedPtr &_newDat
 bool PointCloudDataManager::addImuData(message::msg::ImuData::SharedPtr &_newData)
 {
     imuDataBuffer.insert(imuDataBuffer.end(), _newData->data.begin(), _newData->data.end());
-    for (size_t i = 0 ; i < _newData->data.size() ; i++)
-    {
-        float ang2radCoe = M_PI / 180.0f;
-        static Eigen::Vector3d velocity(0, 0, 0);
-        static Eigen::Vector3d position(0, 0, 0);
-        // 根据设备姿态计算重力在传感器坐标系下的分量
-        Eigen::Vector3d gravity_in_sensor_frame;
-        gravity_in_sensor_frame << 0, 0, -9.81;  // 重力矢量（指向地球中心）
-        double dt = 0.01;
-        // 将欧拉角转换为旋转矩阵
-        Eigen::Matrix3d rotation_matrix;
-        rotation_matrix =  Eigen::AngleAxisd(_newData->data[i].angular.roll * ang2radCoe, Eigen::Vector3d::UnitX())
-                           *   Eigen::AngleAxisd(_newData->data[i].angular.pitch * ang2radCoe, Eigen::Vector3d::UnitY())
-                           *  Eigen::AngleAxisd(_newData->data[i].angular.yaw * ang2radCoe, Eigen::Vector3d::UnitZ());
-        Eigen::Vector3d gravity_compensation = rotation_matrix * gravity_in_sensor_frame;
-        gravity_compensation.z() = -gravity_compensation.z();
-
-        Eigen::Vector3d acceleration = {_newData->data[i].acceleration.acceleration_x,
-                                        _newData->data[i].acceleration.acceleration_y,
-                                        _newData->data[i].acceleration.acceleration_z,
-                                       }  ;
-        // RCLCPP_INFO(rclcpp::get_logger("main"), "        angular:  %10f , %10f , %10f",  _newData->data[i].angular.roll, _newData->data[i].angular.pitch,
-        //             _newData->data[i].angular.yaw);
-        // RCLCPP_INFO(rclcpp::get_logger("main"), "        acceleration： %10f , %10f , %10f", acceleration.x(), acceleration.y(), acceleration.z());
-        // RCLCPP_INFO(rclcpp::get_logger("main"), "gravity_compensation： %10f , %10f , %10f",
-        // gravity_compensation.x(), gravity_compensation.y(), gravity_compensation.z());
-
-        Eigen::Vector3d corrected_acceleration = acceleration - gravity_compensation;
-
-        // RCLCPP_INFO(rclcpp::get_logger("main"), " corrected_acceleration： %10f , %10f , %10f",
-        // corrected_acceleration.x(), corrected_acceleration.y(), corrected_acceleration.z());
-
-        Eigen::Vector3d world_acceleration = rotation_matrix.transpose() * corrected_acceleration;
-
-        // 积分得到速度和位移
-        velocity += world_acceleration * dt;
-        position += velocity * dt;
-
-        // RCLCPP_INFO(rclcpp::get_logger("main"), "     world_acceleration： %10.4f , %10.4f , %10.4f",
-        //             world_acceleration.x(), world_acceleration.y(), world_acceleration.z());
-        // RCLCPP_INFO(rclcpp::get_logger("main"), "velocity : %10f , %10f , %10f", velocity.x(), velocity.y(), velocity.z());
-        // RCLCPP_INFO(rclcpp::get_logger("main"), "Position : %10f , %10f , %10f", position.x(), position.y(), position.z());
-        // std::cout << "velocity: (" << velocity.x() << ", " << velocity.y() << ", " << velocity.z() << ")" << std::endl;
-        // std::cout << "Position: (" << position.x() << ", " << position.y() << ", " << position.z() << ")" << std::endl;
-    }
     return true;
 }
 
@@ -139,12 +94,11 @@ bool PointCloudDataManager::fuseData()
     size_t firstDataIndex = data.size() - 1;
     //由于imu数据密度较低，此处作为缓存优化性能
     size_t lastImuIndex = 0;
-    double roll_rad = imuDataBuffer[lastImuIndex].angular.roll * ang2radCoe;
-    double pitch_rad = imuDataBuffer[lastImuIndex].angular.pitch * ang2radCoe;
-    double yaw_rad = imuDataBuffer[lastImuIndex].angular.yaw * ang2radCoe;
-    Eigen::Matrix3d rx = Eigen::Matrix3d(Eigen::AngleAxisd(roll_rad, Eigen::Vector3d::UnitX()));
-    Eigen::Matrix3d ry = Eigen::Matrix3d(Eigen::AngleAxisd(pitch_rad, Eigen::Vector3d::UnitY()));
-    Eigen::Matrix3d rz = Eigen::Matrix3d(Eigen::AngleAxisd(yaw_rad, Eigen::Vector3d::UnitZ()));
+    double quaternion0 = imuDataBuffer[lastImuIndex].quaternion.quaternion_0;
+    double quaternion1 = imuDataBuffer[lastImuIndex].quaternion.quaternion_1;
+    double quaternion2 = imuDataBuffer[lastImuIndex].quaternion.quaternion_2;
+    double quaternion3 = imuDataBuffer[lastImuIndex].quaternion.quaternion_3;
+    Eigen::Quaterniond quaternion = Eigen::Quaterniond{quaternion0, quaternion1, quaternion2, quaternion3};
     float red = NSPointCloud::RGBNormalized(redOld), green = NSPointCloud::RGBNormalized(greenOld), blue = NSPointCloud::RGBNormalized(blueOld);
     while (imuIndex  < imuDataBuffer.size() && pointsIndex < pointsBuffer.size())
     {
@@ -164,12 +118,11 @@ bool PointCloudDataManager::fuseData()
             if (lastImuIndex != imuIndex)
             {
                 //如果index相同则不再重复计算
-                roll_rad = imuDataBuffer[imuIndex].angular.roll * ang2radCoe;
-                pitch_rad = imuDataBuffer[imuIndex].angular.pitch * ang2radCoe;
-                yaw_rad = imuDataBuffer[imuIndex].angular.yaw * ang2radCoe;
-                rx = Eigen::Matrix3d(Eigen::AngleAxisd(roll_rad, Eigen::Vector3d::UnitX()));
-                ry = Eigen::Matrix3d(Eigen::AngleAxisd(pitch_rad, Eigen::Vector3d::UnitY()));
-                rz = Eigen::Matrix3d(Eigen::AngleAxisd(yaw_rad, Eigen::Vector3d::UnitZ()));
+                quaternion0 = imuDataBuffer[lastImuIndex].quaternion.quaternion_0;
+                quaternion1 = imuDataBuffer[lastImuIndex].quaternion.quaternion_1;
+                quaternion2 = imuDataBuffer[lastImuIndex].quaternion.quaternion_2;
+                quaternion3 = imuDataBuffer[lastImuIndex].quaternion.quaternion_3;
+                quaternion = Eigen::Quaterniond{quaternion0, quaternion1, quaternion2, quaternion3};
                 //使用自定义精度
                 if (enableCustomAccuracy)
                 {
@@ -185,14 +138,12 @@ bool PointCloudDataManager::fuseData()
             }
             // RCLCPP_INFO(rclcpp::get_logger("main"), "%ld", fusionAccuracy);
             double angle_rad =  pointsBuffer[pointsIndex].angle  * ang2radCoe  + M_PI_2;
-            // 构建局部坐标向量（这里假设角度是绕Z轴顺时针）
-            Eigen::Vector3d local_vector(pointsBuffer[pointsIndex].distance * std::sin(angle_rad), pointsBuffer[pointsIndex].distance * std::cos(angle_rad), 0);
-            // 将局部坐标向量转换到全局坐标系
-            Eigen::Vector3d global_vector = rz  * ry * rx * local_vector;
-            // RCLCPP_INFO(rclcpp::get_logger("main"), "%lf, %lf, %lf", global_vector.x(), global_vector.y(), global_vector.z());
+            // 构建局部坐标向量
+            Eigen::Vector3d local_vector( pointsBuffer[pointsIndex].distance * std::sin(angle_rad), pointsBuffer[pointsIndex].distance * std::cos(angle_rad), 0);
+            Eigen::Vector3d worldVector = quaternion * local_vector;
             PointCloudVertex tempPoint =
             {
-                static_cast<float>(global_vector.x()), static_cast<float>(global_vector.y()), static_cast<float>(global_vector.z()),
+                static_cast<float>(worldVector.x()), static_cast<float>(worldVector.y()), static_cast<float>(worldVector.z()),
                 red, green, blue
             };
             data.push_back(tempPoint);
