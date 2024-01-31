@@ -9,6 +9,7 @@ CameraController::CameraController()
     cameraUp = QVector3D::crossProduct(baseVector, cameraRight).normalized();
 
     connect(&timer, SIGNAL(timeout()), this, SLOT(handler()));
+    connect(&animationTimer, SIGNAL(timeout()), this, SLOT(animationHandler()));
 }
 
 CameraController::~CameraController()
@@ -138,28 +139,50 @@ void CameraController::setRotateSpeed(float newRotateSpeed)
 }
 
 
-
 void CameraController::handler()
 {
+    if (animationStart)
+    {
+        return ;
+    }
+    // qDebug() << keys;
+    //加速 减速 效果
+    bool speedUp = false, speedDown = false;
+    float speedMagnification = 1.0;
+    if (keys.contains(Qt::Key_Shift))
+    {
+        speedUp = true;
+        speedMagnification = moveSpeedUpMagnification;
+    }
+    if (keys.contains(Qt::Key_Control))
+    {
+        speedDown = true;
+        speedMagnification = moveSpeedDownMagnification;
+    }
+    if (speedUp && speedDown)
+    {
+        //同时按下加速 减速则无效
+        speedMagnification = 1;
+    }
     foreach (auto k, keys)
     {
         switch (k)
         {
             //前
-            case Qt::Key_W:
-                basePosAdd(getMoveSpeed() * baseVector);
+            case Qt::Key_W :
+                basePosAdd(getMoveSpeed() * baseVector * speedMagnification);
                 break;
             //后
             case Qt::Key_S:
-                basePosAdd(-getMoveSpeed() * baseVector);
+                basePosAdd(-getMoveSpeed() * baseVector * speedMagnification);
                 break;
             //左
             case Qt::Key_A:
-                basePosAdd(getMoveSpeed() * cameraRight);
+                basePosAdd(getMoveSpeed() * cameraRight * speedMagnification);
                 break;
             //右
             case Qt::Key_D:
-                basePosAdd(-getMoveSpeed() * cameraRight);
+                basePosAdd(-getMoveSpeed() * cameraRight * speedMagnification);
                 break;
             //向右滚筒
             case Qt::Key_E:
@@ -172,12 +195,16 @@ void CameraController::handler()
                 cameraRight = rotateAboutAxis(cameraRight,  baseVector, -M_PI * getRollSpeed());
                 break;
             //上升
-            case Qt::Key_Shift:
+            case Qt::Key_X:
                 basePosAdd(getMoveSpeed() * cameraUp);
                 break;
             //下降
-            case Qt::Key_Control:
+            case Qt::Key_Z:
                 basePosAdd(-getMoveSpeed() * cameraUp);
+                break;
+            //重置视角
+            case Qt::Key_R:
+                resetAnimation();
                 break;
             //功能键
             case Qt::Key_V:
@@ -186,6 +213,39 @@ void CameraController::handler()
     }
     emit updateGraph();
 }
+
+void CameraController::animationHandler()
+{
+    if (!animationStart)
+    {
+        return ;
+    }
+    double posDeltaLengthSquared = (targetPos - basePos).lengthSquared();
+    double vectorDeltaLengthSquared = (targetVector - baseVector).lengthSquared();
+    double cameraRightDeltaLengthSquared = (targetCameraRight - cameraRight).lengthSquared();
+    if (posDeltaLengthSquared < animationAccuracy && vectorDeltaLengthSquared < animationAccuracy && cameraRightDeltaLengthSquared < animationAccuracy)
+    {
+        animationStart = false;
+        animationTimer.stop();
+        return;
+    }
+    // qDebug() << posDeltaLengthSquared << " "  <<  vectorDeltaLengthSquared;
+    if (posDeltaLengthSquared > animationAccuracy)
+    {
+        basePos += deltaPos / animationStep;
+    }
+    if (vectorDeltaLengthSquared > animationAccuracy)
+    {
+        baseVector = (baseVector + deltaVector / animationStep).normalized();
+    }
+    if (cameraRightDeltaLengthSquared > animationAccuracy)
+    {
+        cameraRight += deltaCameraRight / animationStep;
+        cameraUp = QVector3D::crossProduct(baseVector, cameraRight).normalized();
+    }
+    emit updateGraph();
+}
+
 
 void CameraController::keypressActionHandler(QKeyEvent *event)
 {
@@ -230,16 +290,28 @@ void CameraController::wheelActionHandler(QWheelEvent *event)
 
 void CameraController::mousepressActionHandler(QMouseEvent *event)
 {
+    if (animationStart)
+    {
+        return ;
+    }
     lastMousePos = event->pos();
 }
 
 void CameraController::mousereleaseActionHandler(QMouseEvent *event)
 {
+    if (animationStart)
+    {
+        return ;
+    }
     lastMousePos = event->pos();
 }
 
 void CameraController::mousemoveActionHandler(QMouseEvent *event)
 {
+    if (animationStart)
+    {
+        return ;
+    }
     currentMousePos = event->pos();
     if (pointsDistance(currentMousePos, lastMousePos)  <= 2)
     {
@@ -266,4 +338,33 @@ void CameraController::mousemoveActionHandler(QMouseEvent *event)
     lastMousePos = currentMousePos;
     emit updateGraph();
 }
+
+
+void CameraController::resetAnimation()
+{
+    if (animationStart)
+    {
+        return;
+    }
+    oldPos = basePos;
+    targetPos = QVector3D(3, 3, 3);
+    deltaPos =  targetPos - oldPos;
+
+    targetVector = (QVector3D(0, 0, 0) - targetPos).normalized();
+    targetCameraRight = QVector3D::crossProduct(baseUp, targetVector).normalized();
+    targetCameraUp = QVector3D::crossProduct(targetVector, targetCameraRight).normalized();
+    deltaVector = targetVector -  baseVector;
+    // deltaUp = targetCameraUp - baseUp;
+    deltaCameraRight = targetCameraRight - cameraRight;
+
+    // 如果变化过小则不改变
+    if (deltaPos.lengthSquared() <  animationAccuracy && deltaVector.lengthSquared() < animationAccuracy && deltaCameraRight.lengthSquared() < animationAccuracy)
+    {
+        return;
+    }
+    animationStart = true;
+    animationTimer.start(animationInterval);
+}
+
+
 

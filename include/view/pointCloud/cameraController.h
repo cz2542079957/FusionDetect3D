@@ -57,7 +57,6 @@ namespace  NSPointCloud
 
 
     private :
-
         //原坐标系相机位置
         QVector3D basePos = QVector3D(3, 3, 3);
         //原坐标系相机朝向的位置
@@ -74,28 +73,53 @@ namespace  NSPointCloud
 
         //定时处理
         QTimer timer;
-        //响应时间间隔(ms)
+        //响应帧间隔(ms)
         int responseInterval =  10;
         //键盘按下按键列表
         QList<int> keys;
         //基础速度
-        float baseSpeed = 1.0f;
+        float baseSpeed = 1.0;
         //移动速度
-        float moveSpeed = 0.0150f;
+        float moveSpeed = 0.0150;
+        //移动加速减速倍率
+        float moveSpeedUpMagnification = 2.0;
+        float moveSpeedDownMagnification = 2.0;
         //滚筒旋转速度
-        float rollSpeed =  0.20f;
+        float rollSpeed =  0.20;
         //视场角 \ 缩放
         float fov = 45;
         //滚轮视场角缩放速度
-        float wheelRate = 0.010f;
+        float wheelRate = 0.010;
 
+        //动画处理定时器
+        QTimer animationTimer;
+        //标记动画是否启动
+        bool animationStart = false;
+        //动画帧间隔(ms)
+        int animationInterval = 10;
+        //动画步数
+        int animationStep = 30;
+        //动画精度
+        float animationAccuracy = 0.001;
+        //动画原位置
+        QVector3D oldPos;
+        //动画目标位置 目标方向
+        QVector3D targetPos;
+        QVector3D targetVector;
+        QVector3D targetCameraUp;
+        QVector3D targetCameraRight;
+        //动画位置 方向 变化量
+        QVector3D deltaPos;
+        QVector3D deltaVector;
+        QVector3D deltaCameraRight;
+        //reset动画
+        void resetAnimation();
 
         //鼠标拖动操作
         QPoint lastMousePos;
         QPoint currentMousePos;
         //拖动灵敏度
         float rotateSpeed = 0.05f;
-
 
     signals:
         void updateGraph();
@@ -104,6 +128,8 @@ namespace  NSPointCloud
     private slots:
         //键盘事件处理程序
         void handler();
+        //动画处理
+        void animationHandler();
     };
 }
 

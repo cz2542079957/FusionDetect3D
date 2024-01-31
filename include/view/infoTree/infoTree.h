@@ -2,7 +2,7 @@
 #define INFOTREE_H
 
 #include "QTreeView"
-#include "QStandardItemModel"
+#include "infoTreeModel.h"
 
 namespace NSInfoTree
 {
@@ -13,7 +13,7 @@ namespace NSInfoTree
         InfoTree(QWidget *parent = nullptr);
         //完成信息状态 显示
     private:
-        QStandardItemModel *model;
+        InfoTreeModel *model;
     };
 }
 
