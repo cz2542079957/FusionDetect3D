@@ -318,23 +318,28 @@ void CameraController::mousemoveActionHandler(QMouseEvent *event)
         //优化剪枝
         return;
     }
-    int rightDelta = currentMousePos.x() - lastMousePos.x();
-    int upDelta = lastMousePos.y()  - currentMousePos.y();
 
+    QQuaternion horizontalRotation = QQuaternion::fromAxisAndAngle(cameraRight, (lastMousePos.y()  - currentMousePos.y()) * getRotateSpeed());
+    QQuaternion verticalRotation = QQuaternion::fromAxisAndAngle(cameraUp, (currentMousePos.x() - lastMousePos.x()) * getRotateSpeed());
+    QQuaternion cumulativeRotation =  (horizontalRotation * verticalRotation).normalized();
 
-    if (upDelta != 0)
-    {
-        baseVector = rotateAboutAxis(baseVector,  cameraRight, upDelta *  getRotateSpeed());
-        cameraUp = QVector3D::crossProduct(baseVector, cameraRight).normalized();
-    }
-    if (rightDelta != 0)
-    {
-        baseVector = rotateAboutAxis(baseVector, cameraUp, rightDelta *  getRotateSpeed());
-        cameraRight = QVector3D::crossProduct(cameraUp, baseVector).normalized();
-    }
+    baseVector = cumulativeRotation.rotatedVector(baseVector);
+    cameraUp = cumulativeRotation.rotatedVector(cameraUp);
+    cameraRight = QVector3D::crossProduct(cameraUp, baseVector).normalized();
+
+    // if (rightDelta != 0)
+    // {
+    //     baseVector = rotateAboutAxis(baseVector, cameraUp, rightDelta *  getRotateSpeed());
+    //     cameraRight = QVector3D::crossProduct(cameraUp, baseVector).normalized();
+    // }
+    // if (upDelta != 0)
+    // {
+    //     baseVector = rotateAboutAxis(baseVector,  cameraRight, upDelta *  getRotateSpeed());
+    //     cameraUp = QVector3D::crossProduct(baseVector, cameraRight).normalized();
+    // }
     // qDebug() << cameraUp;
-    //    qDebug() << lastMousePos << " " << currentMousePos;
-    //    qDebug() << baseVector << " " <<  cameraUp << " " << cameraRight;
+    // qDebug() << lastMousePos << " " << currentMousePos;
+    // qDebug() << baseVector << " " <<  cameraUp << " " << cameraRight;
     lastMousePos = currentMousePos;
     emit updateGraph();
 }

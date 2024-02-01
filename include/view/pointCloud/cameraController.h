@@ -77,13 +77,13 @@ namespace  NSPointCloud
         int responseInterval =  10;
         //键盘按下按键列表
         QList<int> keys;
-        //基础速度
+        //基础速度2.0
         float baseSpeed = 1.0;
         //移动速度
         float moveSpeed = 0.0150;
         //移动加速减速倍率
         float moveSpeedUpMagnification = 2.0;
-        float moveSpeedDownMagnification = 2.0;
+        float moveSpeedDownMagnification = 0.5;
         //滚筒旋转速度
         float rollSpeed =  0.20;
         //视场角 \ 缩放
