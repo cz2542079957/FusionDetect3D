@@ -98,15 +98,33 @@ void CameraController::mousemoveActionHandler(QMouseEvent *event)
         //优化剪枝
         return;
     }
+    int deltaV = lastMousePos.x() - currentMousePos.x();
+    int deltaH = lastMousePos.y()  - currentMousePos.y();
+    if (mode == 0)
+    {
+        //自由视角
+        QQuaternion horizontalRotation = QQuaternion::fromAxisAndAngle(cameraRight, deltaH * getRotateSpeed());
+        QQuaternion verticalRotation = QQuaternion::fromAxisAndAngle(cameraUp, -deltaV * getRotateSpeed());
+        QQuaternion cumulativeRotation =  (horizontalRotation * verticalRotation).normalized();
 
-    QQuaternion horizontalRotation = QQuaternion::fromAxisAndAngle(cameraRight, (lastMousePos.y()  - currentMousePos.y()) * getRotateSpeed());
-    QQuaternion verticalRotation = QQuaternion::fromAxisAndAngle(cameraUp, (currentMousePos.x() - lastMousePos.x()) * getRotateSpeed());
-    QQuaternion cumulativeRotation =  (horizontalRotation * verticalRotation).normalized();
+        baseVector = cumulativeRotation.rotatedVector(baseVector).normalized();
+        cameraUp = cumulativeRotation.rotatedVector(cameraUp).normalized();
+        cameraRight = QVector3D::crossProduct(cameraUp, baseVector).normalized();
+    }
+    else if (mode == 1)
+    {
+        //全环绕视角
+        QQuaternion horizontalRotation = QQuaternion::fromAxisAndAngle(cameraRight, -deltaH * getRotateSpeed());
+        QQuaternion verticalRotation = QQuaternion::fromAxisAndAngle(cameraUp, deltaV * getRotateSpeed());
+        QQuaternion cumulativeRotation =  (horizontalRotation * verticalRotation).normalized();
 
-    baseVector = cumulativeRotation.rotatedVector(baseVector);
-    cameraUp = cumulativeRotation.rotatedVector(cameraUp);
-    cameraRight = QVector3D::crossProduct(cameraUp, baseVector).normalized();
+        baseVector = cumulativeRotation.rotatedVector(baseVector).normalized();
+        cameraUp = cumulativeRotation.rotatedVector(cameraUp).normalized();
+        cameraRight = QVector3D::crossProduct(cameraUp, baseVector).normalized();
 
+        double distance = (basePos  - baseCenter).length();
+        basePos =  - baseVector * distance;
+    }
     lastMousePos = currentMousePos;
     emit updateGraph();
 }
@@ -257,6 +275,7 @@ void CameraController::upDownHandler(int key, float speedMagnification)
             //上升
             case Qt::Key_C:
                 basePosAdd(getMoveSpeed() * cameraUp *  speedMagnification);
+                break;
             //下降
             case Qt::Key_Z:
                 basePosAdd(-getMoveSpeed() * cameraUp *  speedMagnification);
