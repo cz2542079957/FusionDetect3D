@@ -20,32 +20,122 @@ namespace  NSPointCloud
         CameraController();
         ~CameraController();
 
+        const QVector3D &getBasePos() const
+        {
+            return basePos;
+        }
 
-        const QVector3D &getBasePos() const;
-        void setBasePos(const QVector3D &newBasePos);
+        void setBasePos(const QVector3D &newBasePos)
+        {
+            basePos = newBasePos;
+        }
+
         void basePosAdd(const QVector3D &delta);
-        const QVector3D &getBaseDirection() const;
-        void setBaseDirection(const QVector3D &newBaseDirection);
-        const QVector3D &getBaseVector() const;
-        void setBaseVector(const QVector3D &newBaseVector);
-        const QVector3D &getBaseUp() const;
-        void setBaseUp(const QVector3D &newBaseUp);
-        const QVector3D &getCameraRight() const;
-        void setCameraRight(const QVector3D &newCameraRight);
-        const QVector3D &getCameraUp() const;
-        void setCameraUp(const QVector3D &newCameraUp);
 
-        float getBaseSpeed() const;
-        void setBaseSpeed(float newBaseSpeed);
-        float getMoveSpeed() const;
-        void setMoveSpeed(float newMoveSpeed);
-        float getRollSpeed() const;
-        void setRollSpeed(float newRollSpeed);
-        float getWheelRate() const;
-        void setWheelRate(float newWheelRate);
-        float getRotateSpeed() const;
-        void setRotateSpeed(float newRotateSpeed);
-        float getFov() const;
+        const QVector3D &getBaseUp() const
+        {
+            return baseUp;
+        }
+
+        void  setBaseUp(const QVector3D &newBaseUp)
+        {
+            baseUp = newBaseUp;
+        }
+
+        const QVector3D &getCameraRight() const
+        {
+            return cameraRight;
+        }
+
+        void  setCameraRight(const QVector3D &newCameraRight)
+        {
+            cameraRight = newCameraRight;
+        }
+
+        const QVector3D &getCameraUp() const
+        {
+            return cameraUp;
+        }
+
+        void  setCameraUp(const QVector3D &newCameraUp)
+        {
+            cameraUp = newCameraUp;
+        }
+
+        const QVector3D &getBaseDirection() const
+        {
+            return baseDirection;
+        }
+
+        void  setBaseDirection(const QVector3D &newBaseDirection)
+        {
+            baseDirection = newBaseDirection;
+        }
+
+        const QVector3D &getBaseVector() const
+        {
+            return baseVector;
+        }
+
+        void  setBaseVector(const QVector3D &newBaseVector)
+        {
+            baseVector = newBaseVector;
+        }
+
+        float  getFov() const
+        {
+            return fov;
+        }
+
+        float  getBaseSpeed() const
+        {
+            return baseSpeed;
+        }
+
+        void  setBaseSpeed(float newBaseSpeed)
+        {
+            baseSpeed = newBaseSpeed;
+        }
+
+        float  getMoveSpeed() const
+        {
+            return moveSpeed * baseSpeed;
+        }
+
+        void  setMoveSpeed(float newMoveSpeed)
+        {
+            moveSpeed = newMoveSpeed;
+        }
+
+        float  getRollSpeed() const
+        {
+            return rollSpeed * baseSpeed;
+        }
+
+        void  setRollSpeed(float newRollSpeed)
+        {
+            rollSpeed = newRollSpeed;
+        }
+
+        float  getWheelRate() const
+        {
+            return wheelRate * baseSpeed;
+        }
+
+        void  setWheelRate(float newWheelRate)
+        {
+            wheelRate = newWheelRate;
+        }
+
+        float  getRotateSpeed() const
+        {
+            return rotateSpeed * baseSpeed;
+        }
+
+        void  setRotateSpeed(float newRotateSpeed)
+        {
+            rotateSpeed = newRotateSpeed;
+        }
 
 
         void keypressActionHandler(QKeyEvent *event);
@@ -57,10 +147,15 @@ namespace  NSPointCloud
 
 
     private :
+        //模式： 0自由视角     1全环绕视角    2经纬环绕视角
+        int mode = 1;
+
+        //原坐标系中心（可自定义）
+        QVector3D baseCenter = QVector3D(0, 0, 0);
         //原坐标系相机位置
         QVector3D basePos = QVector3D(3, 3, 3);
         //原坐标系相机朝向的位置
-        QVector3D baseDirection =  QVector3D(0, 0, 0);
+        QVector3D baseDirection;
         //原坐标系相机朝向 方向向量
         QVector3D baseVector;
         //原坐标系相机的上方向
@@ -90,6 +185,11 @@ namespace  NSPointCloud
         float fov = 45;
         //滚轮视场角缩放速度
         float wheelRate = 0.010;
+        //移动控制（处理WASD按键）
+        void moveHandler(int key, float speedMagnification);
+        //滚筒旋转控制（处理QE按键）
+        void rollHandler(int key);
+        //
 
         //动画处理定时器
         QTimer animationTimer;
@@ -112,8 +212,10 @@ namespace  NSPointCloud
         QVector3D deltaPos;
         QVector3D deltaVector;
         QVector3D deltaCameraRight;
-        //reset动画
+        //重置到开始位置
         void resetAnimation();
+        //看向中心位置
+        void lookAtCenterAnimation();
 
         //鼠标拖动操作
         QPoint lastMousePos;
@@ -121,15 +223,16 @@ namespace  NSPointCloud
         //拖动灵敏度
         float rotateSpeed = 0.05f;
 
-    signals:
-        void updateGraph();
-
 
     private slots:
         //键盘事件处理程序
         void handler();
         //动画处理
         void animationHandler();
+
+
+    signals:
+        void updateGraph();
     };
 }
 
