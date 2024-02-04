@@ -152,13 +152,9 @@ void CameraController::handler()
             case Qt::Key_E:
                 rollHandler(key);
                 break;
-            //上升
-            case Qt::Key_X:
-                basePosAdd(getMoveSpeed() * cameraUp);
-                break;
-            //下降
+            case Qt::Key_C:
             case Qt::Key_Z:
-                basePosAdd(-getMoveSpeed() * cameraUp);
+                upDownHandler(key, speedMagnification);
                 break;
             //重置视角
             case Qt::Key_R:
@@ -207,6 +203,11 @@ void CameraController::moveHandler(int key, float speedMagnification = 1.0)
         {
             //拉近
             case Qt::Key_W :
+                if (distance <= 0.1)
+                {
+                    // 距离太近，不能继续拉近
+                    return ;
+                }
                 basePosAdd(getMoveSpeed() * baseVector * speedMagnification);
                 break;
             //远离
@@ -215,14 +216,13 @@ void CameraController::moveHandler(int key, float speedMagnification = 1.0)
                 break;
             //左转
             case Qt::Key_A:
-                //计算距离
-                baseVector = rotateAboutAxis(baseVector, cameraUp,  M_PI * getRollSpeed()).normalized();
+                baseVector = rotateAboutAxis(baseVector, cameraUp,  -M_PI * getRollSpeed() *  speedMagnification).normalized();
                 cameraRight = QVector3D::crossProduct(cameraUp, baseVector).normalized();
                 basePos =  - baseVector * distance;
                 break;
             //右转
             case Qt::Key_D:
-                baseVector =  rotateAboutAxis(baseVector, cameraUp,  -M_PI * getRollSpeed()).normalized();
+                baseVector =  rotateAboutAxis(baseVector, cameraUp,  M_PI * getRollSpeed() *  speedMagnification).normalized();
                 cameraRight = QVector3D::crossProduct(cameraUp, baseVector).normalized();
                 basePos = - baseVector * distance;
                 break;
@@ -247,6 +247,44 @@ void CameraController::rollHandler(int key)
     }
 }
 
+void CameraController::upDownHandler(int key, float speedMagnification)
+{
+    //自由视角（默认）
+    if (mode == 0)
+    {
+        switch (key)
+        {
+            //上升
+            case Qt::Key_C:
+                basePosAdd(getMoveSpeed() * cameraUp *  speedMagnification);
+            //下降
+            case Qt::Key_Z:
+                basePosAdd(-getMoveSpeed() * cameraUp *  speedMagnification);
+                break;
+        }
+    }
+    //全环绕视角
+    else if (mode == 1)
+    {
+        //获得当前位置与中心点的距离
+        double distance = (basePos  - baseCenter).length();
+        switch (key)
+        {
+            //上升环绕
+            case Qt::Key_C:
+                baseVector = rotateAboutAxis(baseVector, cameraRight,  M_PI * getRollSpeed() *  speedMagnification).normalized();
+                cameraUp = - QVector3D::crossProduct(cameraRight, baseVector).normalized();
+                basePos =  - baseVector * distance;
+                break;
+            //下降环绕
+            case Qt::Key_Z:
+                baseVector = rotateAboutAxis(baseVector, cameraRight,  -M_PI * getRollSpeed() *  speedMagnification).normalized();
+                cameraUp = - QVector3D::crossProduct(cameraRight, baseVector).normalized();
+                basePos =  - baseVector * distance;
+                break;
+        }
+    }
+}
 
 void CameraController::animationHandler()
 {

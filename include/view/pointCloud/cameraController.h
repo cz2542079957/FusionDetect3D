@@ -189,7 +189,9 @@ namespace  NSPointCloud
         void moveHandler(int key, float speedMagnification);
         //滚筒旋转控制（处理QE按键）
         void rollHandler(int key);
-        //
+        //上下控制（处理ZX按键）
+        void upDownHandler(int key, float speedMagnification);
+
 
         //动画处理定时器
         QTimer animationTimer;
