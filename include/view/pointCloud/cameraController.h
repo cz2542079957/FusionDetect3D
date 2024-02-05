@@ -20,6 +20,13 @@ namespace  NSPointCloud
         CameraController();
         ~CameraController();
 
+        int getMode() const
+        {
+            return mode;
+        }
+
+        void modeSelect(int newMode);
+
         const QVector3D &getBasePos() const
         {
             return basePos;
@@ -145,10 +152,9 @@ namespace  NSPointCloud
         void mousereleaseActionHandler(QMouseEvent *event);
         void mousemoveActionHandler(QMouseEvent *event);
 
-
     private :
         //模式： 0自由视角     1全环绕视角    2经纬环绕视角
-        int mode = 1;
+        int mode = 0;
 
         //原坐标系中心（可自定义）
         QVector3D baseCenter = QVector3D(0, 0, 0);
@@ -201,8 +207,11 @@ namespace  NSPointCloud
         int animationInterval = 10;
         //动画步数
         int animationStep = 30;
+        int animationRemainStep = 30;
         //动画精度
-        float animationAccuracy = 0.001;
+        float animationPosAccuracy = 1e-3;
+        float animationVectorAccuracy = 1e-4;
+        float animationRollAccuracy = 1e-4;
         //动画原位置
         QVector3D oldPos;
         //动画目标位置 目标方向

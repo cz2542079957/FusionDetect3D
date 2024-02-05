@@ -1,5 +1,6 @@
 #include "cameraController.h"
 
+#include "QThread"
 using namespace NSPointCloud;
 
 CameraController::CameraController()
@@ -17,6 +18,21 @@ CameraController::CameraController()
 
 CameraController::~CameraController()
 {
+}
+
+void CameraController::modeSelect(int newMode)
+{
+    if (this->mode == newMode)
+    {
+        return;
+    }
+
+    if (newMode == 1 ||  newMode == 2)
+    {
+        //环绕模式，需要重置视角
+        lookAtCenterAnimation();
+    }
+    mode = newMode;
 }
 
 
@@ -70,29 +86,23 @@ void CameraController::wheelActionHandler(QWheelEvent *event)
 
 void CameraController::mousepressActionHandler(QMouseEvent *event)
 {
-    if (animationStart)
-    {
-        return ;
-    }
     lastMousePos = event->pos();
 }
 
 void CameraController::mousereleaseActionHandler(QMouseEvent *event)
 {
-    if (animationStart)
-    {
-        return ;
-    }
     lastMousePos = event->pos();
 }
 
 void CameraController::mousemoveActionHandler(QMouseEvent *event)
 {
+    currentMousePos = event->pos();
     if (animationStart)
     {
+        //避免动画执行结束的抽动
+        lastMousePos = currentMousePos;
         return ;
     }
-    currentMousePos = event->pos();
     if (pointsDistance(currentMousePos, lastMousePos)  <= 2)
     {
         //优化剪枝
@@ -128,8 +138,6 @@ void CameraController::mousemoveActionHandler(QMouseEvent *event)
     lastMousePos = currentMousePos;
     emit updateGraph();
 }
-
-
 
 void CameraController::handler()
 {
@@ -309,30 +317,22 @@ void CameraController::animationHandler()
 {
     if (!animationStart)
     {
+        animationTimer.stop();
         return ;
     }
-    double posDeltaLengthSquared = (targetPos - basePos).lengthSquared();
-    double vectorDeltaLengthSquared = (targetVector - baseVector).lengthSquared();
-    double cameraRightDeltaLengthSquared = (targetCameraRight - cameraRight).lengthSquared();
-    if (posDeltaLengthSquared < animationAccuracy && vectorDeltaLengthSquared < animationAccuracy && cameraRightDeltaLengthSquared < animationAccuracy)
+    QVector3D deltaPosStep = (targetPos - basePos) / animationRemainStep;
+    QVector3D  deltaVectorStep  = (targetVector - baseVector) / animationRemainStep;
+    QVector3D  deltaCameraRightStep =  (targetCameraRight - cameraRight) / animationRemainStep;
+
+    basePos += deltaPosStep;
+    baseVector = (baseVector + deltaVectorStep).normalized();
+    cameraRight = (cameraRight +  deltaCameraRightStep).normalized();
+    cameraUp = QVector3D::crossProduct(baseVector, cameraRight).normalized();
+    if (--animationRemainStep <= 0)
     {
+        //动画结束
         animationStart = false;
         animationTimer.stop();
-        return;
-    }
-    // qDebug() << posDeltaLengthSquared << " "  <<  vectorDeltaLengthSquared;
-    if (posDeltaLengthSquared > animationAccuracy)
-    {
-        basePos += deltaPos / animationStep;
-    }
-    if (vectorDeltaLengthSquared > animationAccuracy)
-    {
-        baseVector = (baseVector + deltaVector / animationStep).normalized();
-    }
-    if (cameraRightDeltaLengthSquared > animationAccuracy)
-    {
-        cameraRight += deltaCameraRight / animationStep;
-        cameraUp = QVector3D::crossProduct(baseVector, cameraRight).normalized();
     }
     emit updateGraph();
 }
@@ -351,16 +351,17 @@ void CameraController::resetAnimation()
     //计算目标位置的相机方位
     targetVector = (QVector3D(0, 0, 0) - targetPos).normalized();
     targetCameraRight = QVector3D::crossProduct(baseUp, targetVector).normalized();
-    targetCameraUp = QVector3D::crossProduct(targetVector, targetCameraRight).normalized();
     deltaVector = targetVector -  baseVector;
     deltaCameraRight = targetCameraRight - cameraRight;
 
     // 如果变化过小则不改变
-    if (deltaPos.lengthSquared() <  animationAccuracy && deltaVector.lengthSquared() < animationAccuracy && deltaCameraRight.lengthSquared() < animationAccuracy)
+    if (deltaPos.length() <  animationPosAccuracy && deltaVector.length() < animationVectorAccuracy
+            && deltaCameraRight.length() < animationRollAccuracy)
     {
         return;
     }
     animationStart = true;
+    animationRemainStep = animationStep;
     animationTimer.start(animationInterval);
 }
 
@@ -378,16 +379,18 @@ void CameraController::lookAtCenterAnimation()
     //计算目标位置的相机方位
     targetVector = (baseCenter - targetPos).normalized();
     targetCameraRight = QVector3D::crossProduct(baseUp, targetVector).normalized();
-    targetCameraUp = QVector3D::crossProduct(targetVector, targetCameraRight).normalized();
     deltaVector = targetVector -  baseVector;
     deltaCameraRight = targetCameraRight - cameraRight;
 
+    // qDebug() <<  deltaPos.length() << " " << deltaVector.length()  << " " << deltaCameraRight.length();
     // 如果变化过小则不改变
-    if (deltaPos.lengthSquared() <  animationAccuracy && deltaVector.lengthSquared() < animationAccuracy && deltaCameraRight.lengthSquared() < animationAccuracy)
+    if (deltaPos.length() <  animationPosAccuracy && deltaVector.length() < animationVectorAccuracy
+            && deltaCameraRight.length() < animationRollAccuracy)
     {
         return;
     }
     animationStart = true;
+    animationRemainStep = animationStep;
     animationTimer.start(animationInterval);
 }
 

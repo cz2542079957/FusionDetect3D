@@ -198,6 +198,11 @@ void PointCloudWidget::onTimeout()
     update();
 }
 
+void PointCloudWidget::modeSelect(int mode)
+{
+    camera.modeSelect(mode);
+}
+
 void PointCloudWidget::showAxis(bool val)
 {
     enableAxis  = val;

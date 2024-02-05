@@ -94,6 +94,8 @@ namespace NSPointCloud
 
     public slots:
         void onTimeout();
+        //显示模式选择
+        void modeSelect(int mode);
         //显示坐标轴
         void showAxis(bool val);
         //显示网格

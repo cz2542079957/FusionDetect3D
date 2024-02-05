@@ -4,6 +4,7 @@
 MainWindow::MainWindow(QWidget *parent): QMainWindow(parent), ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    connect(this, SIGNAL(modeSelect(int)), ui->pointCloudWidget, SLOT(modeSelect(int)));
     connect(this, SIGNAL(showAxis(bool)), ui->pointCloudWidget, SLOT(showAxis(bool)));
     connect(this, SIGNAL(showMesh(bool)), ui->pointCloudWidget, SLOT(showMesh(bool)));
     connect(this, SIGNAL(clearPointCloud()), ui->pointCloudWidget, SLOT(clearPointCloud()));
@@ -49,10 +50,14 @@ void MainWindow::on_showAxis_clicked()
     }
 }
 
-
-
 void MainWindow::on_clearPointCloud_clicked()
 {
     emit clearPointCloud();
+}
+
+
+void MainWindow::on_comboBox_currentIndexChanged(int index)
+{
+    emit modeSelect(index);
 }
 
