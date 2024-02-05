@@ -90,13 +90,18 @@ namespace NSPointCloud
         virtual void resizeGL(int w, int h) override;
         virtual void paintGL() override;
 
+        virtual void focusOutEvent(QFocusEvent *event) override;
+
     signals:
+        void infoTreeUpdate(const CameraController &camera);
 
     public slots:
         void onTimeout();
         //显示模式选择
         void modeSelect(int mode);
-        //显示坐标轴
+        //重置视角
+        void resetView();
+        //显示坐标
         void showAxis(bool val);
         //显示网格
         void showMesh(bool val);
@@ -109,6 +114,7 @@ namespace NSPointCloud
         void recvPointsData(message::msg::LidarData::SharedPtr msg);
         //拿到惯导数据
         void recvImuData(message::msg::ImuData::SharedPtr msg);
+
     };
 }
 

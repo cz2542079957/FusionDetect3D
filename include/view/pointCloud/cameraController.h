@@ -152,6 +152,11 @@ namespace  NSPointCloud
         void mousereleaseActionHandler(QMouseEvent *event);
         void mousemoveActionHandler(QMouseEvent *event);
 
+        //清空按键
+        void clearKeys();
+        //重置视角
+        void resetView();
+
     private :
         //模式： 0自由视角     1全环绕视角    2经纬环绕视角
         int mode = 0;
@@ -223,6 +228,9 @@ namespace  NSPointCloud
         QVector3D deltaPos;
         QVector3D deltaVector;
         QVector3D deltaCameraRight;
+        //开始、结束动画
+        void startAnimation();
+        void stopAnimation();
         //重置到开始位置
         void resetAnimation();
         //看向中心位置
@@ -235,6 +243,9 @@ namespace  NSPointCloud
         float rotateSpeed = 0.05f;
 
 
+    signals:
+        void updateGraph();
+
     private slots:
         //键盘事件处理程序
         void handler();
@@ -242,8 +253,6 @@ namespace  NSPointCloud
         void animationHandler();
 
 
-    signals:
-        void updateGraph();
     };
 }
 

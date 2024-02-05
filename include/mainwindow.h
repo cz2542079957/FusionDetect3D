@@ -27,6 +27,7 @@ private:
 
 signals:
     void modeSelect(int mode);
+    void resetView();
     void showAxis(bool val);
     void showMesh(bool val);
     void clearPointCloud();
@@ -37,5 +38,6 @@ private slots:
 
     void on_clearPointCloud_clicked();
     void on_comboBox_currentIndexChanged(int index);
+    void on_resetView_clicked();
 };
 #endif // MAINWINDOW_H

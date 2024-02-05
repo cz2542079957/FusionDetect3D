@@ -10,3 +10,8 @@ InfoTree::InfoTree(QWidget *parent): QTreeView(parent)
     // setSelectionMode(QAbstractItemView::ExtendedSelection);
     setEditTriggers(QAbstractItemView::NoEditTriggers);
 }
+
+void InfoTree::update(const NSPointCloud::CameraController &camera)
+{
+    model->updateData(camera);
+}

@@ -2,6 +2,7 @@
 #define INFOTREEMODEL_H
 
 #include "QStandardItemModel"
+#include <cameraController.h>
 
 namespace NSInfoTree
 {
@@ -10,6 +11,12 @@ namespace NSInfoTree
         Q_OBJECT
     public:
         InfoTreeModel(QObject *parent = nullptr);
+
+        void updateData(const NSPointCloud::CameraController &camera);
+
+    private:
+        QStandardItem *position;
+
     };
 }
 

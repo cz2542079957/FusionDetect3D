@@ -5,13 +5,17 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent), ui(new Ui::MainWin
 {
     ui->setupUi(this);
     connect(this, SIGNAL(modeSelect(int)), ui->pointCloudWidget, SLOT(modeSelect(int)));
+    connect(this, SIGNAL(resetView()), ui->pointCloudWidget, SLOT(resetView()));
     connect(this, SIGNAL(showAxis(bool)), ui->pointCloudWidget, SLOT(showAxis(bool)));
     connect(this, SIGNAL(showMesh(bool)), ui->pointCloudWidget, SLOT(showMesh(bool)));
     connect(this, SIGNAL(clearPointCloud()), ui->pointCloudWidget, SLOT(clearPointCloud()));
+    //ros节点
     connect(&this->dc, SIGNAL(sendPointsSignals(message::msg::LidarData::SharedPtr)), ui->pointCloudWidget,
             SLOT(recvPointsData(message::msg::LidarData::SharedPtr)));
     connect(&this->dc, SIGNAL(sendImuDataSignals(message::msg::ImuData::SharedPtr)), ui->pointCloudWidget,
             SLOT(recvImuData(message::msg::ImuData::SharedPtr)));
+    //界面数据
+    connect(ui->pointCloudWidget, SIGNAL(infoTreeUpdate(NSPointCloud::CameraController)), ui->infoTree, SLOT(update(NSPointCloud::CameraController)));
 
     //    //取消标题栏
     //    this->setWindowFlags(Qt::FramelessWindowHint);
@@ -25,6 +29,18 @@ MainWindow::~MainWindow()
 {
     delete ui;
 }
+
+void MainWindow::on_comboBox_currentIndexChanged(int index)
+{
+    emit modeSelect(index);
+}
+
+
+void MainWindow::on_resetView_clicked()
+{
+    emit resetView();
+}
+
 
 void MainWindow::on_showMesh_clicked()
 {
@@ -56,8 +72,4 @@ void MainWindow::on_clearPointCloud_clicked()
 }
 
 
-void MainWindow::on_comboBox_currentIndexChanged(int index)
-{
-    emit modeSelect(index);
-}
 

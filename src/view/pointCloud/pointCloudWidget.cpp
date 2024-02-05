@@ -189,7 +189,18 @@ void PointCloudWidget::paintGL()
         glPointSize(pointSize);
         glDrawArrays(GL_POINTS, 0, pointCloudDataManager->getCurrentCacheSize());
     }
+
+    //同步更新信息
+    emit infoTreeUpdate(camera);
 }
+
+void PointCloudWidget::focusOutEvent(QFocusEvent *event)
+{
+    Q_UNUSED(event);
+    //失去焦点，相机控制器按键清空
+    camera.clearKeys();
+}
+
 
 void PointCloudWidget::onTimeout()
 {
@@ -201,6 +212,11 @@ void PointCloudWidget::onTimeout()
 void PointCloudWidget::modeSelect(int mode)
 {
     camera.modeSelect(mode);
+}
+
+void PointCloudWidget::resetView()
+{
+    camera.resetView();
 }
 
 void PointCloudWidget::showAxis(bool val)
@@ -257,3 +273,4 @@ void PointCloudWidget::recvImuData(message::msg::ImuData::SharedPtr msg)
 {
     pointCloudDataManager->addImuData(msg);
 }
+
