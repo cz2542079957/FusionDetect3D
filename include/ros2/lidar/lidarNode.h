@@ -1,7 +1,5 @@
-#ifndef LIDARNODE_H
-#define LIDARNODE_H
-#include <rclcpp/rclcpp.hpp>
-#include "message/msg/lidar_data.hpp"
+#pragma once
+#include "common.h"
 
 class LidarNode: public rclcpp::Node
 {
@@ -18,5 +16,3 @@ private:
     std::shared_ptr<rclcpp::executors::SingleThreadedExecutor> executor;
 
 };
-
-#endif // LIDARNODE_H

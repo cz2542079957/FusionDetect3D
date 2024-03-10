@@ -10,12 +10,12 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent), ui(new Ui::MainWin
     connect(this, SIGNAL(showMesh(bool)), ui->pointCloudWidget, SLOT(showMesh(bool)));
     connect(this, SIGNAL(clearPointCloud()), ui->pointCloudWidget, SLOT(clearPointCloud()));
     //ros节点
-    connect(&this->dc, SIGNAL(sendPointsSignals(message::msg::LidarData::SharedPtr)), ui->pointCloudWidget,
-            SLOT(recvPointsData(message::msg::LidarData::SharedPtr)));
-    connect(&this->dc, SIGNAL(sendImuDataSignals(message::msg::ImuData::SharedPtr)), ui->pointCloudWidget,
-            SLOT(recvImuData(message::msg::ImuData::SharedPtr)));
+    connect(&this->dc, SIGNAL(sendPointsSignals(message::msg::LidarData::SharedPtr)),
+            ui->pointCloudWidget, SLOT(recvPointsData(message::msg::LidarData::SharedPtr)));
+    connect(&this->dc, SIGNAL(sendImuDataSignals(message::msg::ImuData::SharedPtr)),
+            ui->pointCloudWidget, SLOT(recvImuData(message::msg::ImuData::SharedPtr)));
     //界面数据
-    connect(ui->pointCloudWidget, SIGNAL(infoTreeUpdate(NSPointCloud::CameraController)), ui->infoTree, SLOT(update(NSPointCloud::CameraController)));
+    connect(ui->pointCloudWidget, SIGNAL(infoTreeUpdate(CameraController)), ui->infoTree, SLOT(update(CameraController)));
 
     //    //取消标题栏
     //    this->setWindowFlags(Qt::FramelessWindowHint);

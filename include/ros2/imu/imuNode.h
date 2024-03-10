@@ -1,9 +1,5 @@
-#ifndef IMUNODE_H
-#define IMUNODE_H
-
-#include "rclcpp/rclcpp.hpp"
-#include "message/msg/imu_data.hpp"
-#include "vector"
+#pragma once
+#include "common.h"
 
 class ImuNode : public rclcpp::Node
 {
@@ -21,5 +17,3 @@ private:
 
 
 };
-
-#endif // IMUNODE_H

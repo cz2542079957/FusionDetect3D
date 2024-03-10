@@ -4,20 +4,17 @@
 #include "QStandardItemModel"
 #include <cameraController.h>
 
-namespace NSInfoTree
+class InfoTreeModel : public QStandardItemModel
 {
-    class InfoTreeModel : public QStandardItemModel
-    {
-        Q_OBJECT
-    public:
-        InfoTreeModel(QObject *parent = nullptr);
+    Q_OBJECT
+public:
+    InfoTreeModel(QObject *parent = nullptr);
 
-        void updateData(const NSPointCloud::CameraController &camera);
+    void updateData(const   CameraController &camera);
 
-    private:
-        QStandardItem *position;
+private:
+    QStandardItem *position;
 
-    };
-}
+};
 
 #endif // INFOTREEMODEL_H

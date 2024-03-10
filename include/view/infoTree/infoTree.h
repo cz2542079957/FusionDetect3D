@@ -4,22 +4,19 @@
 #include "QTreeView"
 #include "infoTreeModel.h"
 
-namespace NSInfoTree
+class InfoTree : public QTreeView
 {
-    class InfoTree : public QTreeView
-    {
-        Q_OBJECT
-    public:
-        InfoTree(QWidget *parent = nullptr);
-        //完成信息状态 显示
+    Q_OBJECT
+public:
+    InfoTree(QWidget *parent = nullptr);
+    //完成信息状态 显示
 
-    private:
-        InfoTreeModel *model;
+private:
+    InfoTreeModel *model;
 
-    public slots:
-        void update(const NSPointCloud::CameraController &camera);
+public slots:
+    void update(const   CameraController &camera);
 
-    };
-}
+};
 
 #endif // INFOTREE_H

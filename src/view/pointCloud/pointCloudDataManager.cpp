@@ -1,7 +1,5 @@
 #include "pointCloudDataManager.h"
 
-using namespace NSPointCloud;
-
 PointCloudDataManager::PointCloudDataManager(int _maxCacheSize)
 {
     pointsBuffer.reserve(maxPointsBufferSize);
@@ -99,7 +97,7 @@ bool PointCloudDataManager::fuseData()
     double quaternion2 = imuDataBuffer[lastImuIndex].quaternion.quaternion_2;
     double quaternion3 = imuDataBuffer[lastImuIndex].quaternion.quaternion_3;
     Eigen::Quaterniond quaternion = Eigen::Quaterniond{quaternion0, quaternion1, quaternion2, quaternion3};
-    float red = NSPointCloud::RGBNormalized(redOld), green = NSPointCloud::RGBNormalized(greenOld), blue = NSPointCloud::RGBNormalized(blueOld);
+    float red = RGBNormalized(redOld), green = RGBNormalized(greenOld), blue = RGBNormalized(blueOld);
     while (imuIndex  < imuDataBuffer.size() && pointsIndex < pointsBuffer.size())
     {
         // RCLCPP_INFO(rclcpp::get_logger("main"), "1");
@@ -200,9 +198,9 @@ bool PointCloudDataManager::handlePointsColor()
     for (size_t i = handledBatchIndex + 1; i < batches.size(); i ++)
     {
         int offset = i - handledBatchIndex - 1;
-        float red = NSPointCloud::RGBNormalized(redOld - redDelta * offset);
-        float green = NSPointCloud::RGBNormalized(greenOld - greenDelta * offset);
-        float blue = NSPointCloud::RGBNormalized(blueOld - blueDelta * offset);
+        float red = RGBNormalized(redOld - redDelta * offset);
+        float green = RGBNormalized(greenOld - greenDelta * offset);
+        float blue = RGBNormalized(blueOld - blueDelta * offset);
         for (size_t j = batches[i].firstDataIndex; j < batches[i].firstDataIndex + batches[i].size; j ++)
         {
             data[j].red = red;

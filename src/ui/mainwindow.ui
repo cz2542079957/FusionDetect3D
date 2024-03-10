@@ -62,7 +62,7 @@
          <x>0</x>
          <y>0</y>
          <width>1198</width>
-         <height>101</height>
+         <height>108</height>
         </rect>
        </property>
        <property name="sizePolicy">
@@ -383,7 +383,7 @@
         </widget>
        </item>
        <item>
-        <widget class="NSPointCloud::PointCloudWidget" name="pointCloudWidget" native="true">
+        <widget class="PointCloudWidget" name="pointCloudWidget" native="true">
          <property name="sizePolicy">
           <sizepolicy hsizetype="MinimumExpanding" vsizetype="Expanding">
            <horstretch>0</horstretch>
@@ -433,7 +433,7 @@
            </widget>
           </item>
           <item>
-           <widget class="NSInfoTree::InfoTree" name="infoTree">
+           <widget class="InfoTree" name="infoTree">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
               <horstretch>0</horstretch>
@@ -570,13 +570,13 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>NSPointCloud::PointCloudWidget</class>
+   <class>PointCloudWidget</class>
    <extends>QWidget</extends>
    <header>pointCloudWidget.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>NSInfoTree::InfoTree</class>
+   <class>InfoTree</class>
    <extends>QTreeView</extends>
    <header>infoTree.h</header>
   </customwidget>

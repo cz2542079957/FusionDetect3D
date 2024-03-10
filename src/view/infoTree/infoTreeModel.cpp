@@ -1,6 +1,5 @@
 #include "infoTree/infoTreeModel.h"
 
-using namespace NSInfoTree;
 
 InfoTreeModel::InfoTreeModel(QObject *parent) : QStandardItemModel(parent)
 {
@@ -15,7 +14,7 @@ InfoTreeModel::InfoTreeModel(QObject *parent) : QStandardItemModel(parent)
     appendRow(position);
 }
 
-void InfoTreeModel::updateData(const NSPointCloud::CameraController &camera)
+void InfoTreeModel::updateData(const  CameraController &camera)
 {
     position->child(0, 0)->setText("X: " + QString::number(camera.getBasePos().x()));
     position->child(1, 0)->setText("Y: " + QString::number(camera.getBasePos().y()));

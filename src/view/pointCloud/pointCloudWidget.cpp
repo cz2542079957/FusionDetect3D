@@ -1,7 +1,5 @@
 ﻿#include "pointCloudWidget.h"
 
-using namespace NSPointCloud;
-
 PointCloudWidget::PointCloudWidget(QWidget *parent): QOpenGLWidget(parent)
 {
     pointCloudDataManager = new PointCloudDataManager();

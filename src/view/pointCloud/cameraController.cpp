@@ -1,7 +1,6 @@
 #include "cameraController.h"
 
 #include "QThread"
-using namespace NSPointCloud;
 
 CameraController::CameraController()
 {
