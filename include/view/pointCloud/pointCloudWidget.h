@@ -16,11 +16,11 @@ public:
     explicit PointCloudWidget(QWidget *parent = nullptr);
     ~PointCloudWidget();
     // 点云数据管理器
-    PointCloudDataManager *pointCloudDataManager;
-
-private :
+    PointCloudDataManager pointCloudDataManager;
     //相机控制器
     CameraController camera;
+
+private :
     //变换矩阵(模型、视野、投影)
     QMatrix4x4 model, view, projection;
     //渲染距离

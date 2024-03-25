@@ -10,7 +10,7 @@ class InfoTreeModel : public QStandardItemModel
 public:
     InfoTreeModel(QObject *parent = nullptr);
 
-    void updateData(const   CameraController &camera);
+    void updateData(const CameraController &camera);
 
 private:
     QStandardItem *position;

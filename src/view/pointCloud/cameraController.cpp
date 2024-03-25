@@ -11,6 +11,7 @@ CameraController::CameraController()
     cameraRight = QVector3D::crossProduct(baseUp, baseVector).normalized();
     cameraUp = QVector3D::crossProduct(baseVector, cameraRight).normalized();
 
+    //定时器
     connect(&timer, SIGNAL(timeout()), this, SLOT(handler()));
     connect(&animationTimer, SIGNAL(timeout()), this, SLOT(animationHandler()));
 }
@@ -194,6 +195,9 @@ void CameraController::handler()
                 {
                     continue;
                 }
+                moveHandler(key, speedMagnification);
+                break;
+
             case Qt::Key_A:
             case Qt::Key_D:
                 if (keys.contains(Qt::Key_A) && keys.contains(Qt::Key_D))

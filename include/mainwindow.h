@@ -21,9 +21,13 @@ public:
     ~MainWindow();
 
 private:
+    //页面组件
     Ui::MainWindow *ui;
     //设备控制器
     DeviceController dc;
+
+    //信号槽注册中心
+    bool SignalsSlotsRegister();
 
 
 signals:
