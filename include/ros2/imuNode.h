@@ -15,5 +15,4 @@ private:
     rclcpp::Subscription<message::msg::ImuData>::SharedPtr subscription;
     std::shared_ptr<rclcpp::executors::SingleThreadedExecutor> executor;
 
-
 };

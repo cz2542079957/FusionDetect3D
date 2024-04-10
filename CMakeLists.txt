@@ -67,15 +67,11 @@ FILE(GLOB SOURCE
     "include/view/infoTree/*.h"
     "include/view/pointCloud/*.h"
     "include/ros2/*.h"
-    "include/ros2/lidar/*.h"
-    "include/ros2/imu/*.h"
     "src/*.cpp"
     "src/view/*.cpp"
     "src/view/infoTree/*.cpp"
     "src/view/pointCloud/*.cpp"
     "src/ros2/*.cpp"
-    "src/ros2/lidar/*.cpp"
-    "src/ros2/imu/*.cpp"
     main.cpp
     res/res.qrc
 )

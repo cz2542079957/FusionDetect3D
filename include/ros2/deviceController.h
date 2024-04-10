@@ -1,8 +1,8 @@
 #ifndef DEVICECONTROLLER_H
 #define DEVICECONTROLLER_H
 #include <QObject>
-#include <lidar/lidarNode.h>
-#include <imu/imuNode.h>
+#include <lidarNode.h>
+#include <imuNode.h>
 
 class DeviceController : public QObject
 {

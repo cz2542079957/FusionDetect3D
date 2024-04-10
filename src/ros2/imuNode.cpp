@@ -1,4 +1,4 @@
-#include "imu/imuNode.h"
+#include "imuNode.h"
 
 ImuNode::ImuNode(): Node("imuNode")
 {
