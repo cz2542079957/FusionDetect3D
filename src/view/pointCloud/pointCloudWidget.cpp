@@ -94,7 +94,7 @@ void PointCloudWidget::initializeGL()
     glEnableVertexAttribArray(color1);
 
     //---网格数据---
-    drawMesh(-5, 10, -5, 10);
+    drawMeshSlot(-5, 10, -5, 10);
     glGenVertexArrays(1, &meshVAO);
     glGenBuffers(1, &meshVBO);
     glBindVertexArray(meshVAO);
@@ -185,7 +185,7 @@ void PointCloudWidget::paintGL()
     }
 
     //同步更新信息
-    emit infoTreeUpdate(camera);
+    emit infoTreeUpdateSignal(camera);
 }
 
 void PointCloudWidget::focusOutEvent(QFocusEvent *event)
@@ -203,29 +203,29 @@ void PointCloudWidget::onTimeout()
     update();
 }
 
-void PointCloudWidget::modeSelect(int mode)
+void PointCloudWidget::modeSelectSlot(int mode)
 {
     camera.modeSelect(mode);
 }
 
-void PointCloudWidget::resetView()
+void PointCloudWidget::resetViewSlot()
 {
     camera.resetView();
 }
 
-void PointCloudWidget::showAxis(bool val)
+void PointCloudWidget::showAxisSlot(bool val)
 {
     enableAxis  = val;
     update();
 }
 
-void PointCloudWidget::showMesh(bool val)
+void PointCloudWidget::showMeshSlot(bool val)
 {
     enableMesh = val;
     update();
 }
 
-void PointCloudWidget::drawMesh(int rowBegin, int  rows, int  columnBegin, int  columns)
+void PointCloudWidget::drawMeshSlot(int rowBegin, int  rows, int  columnBegin, int  columns)
 {
     meshData.clear();
     meshLinesCount = rows  + columns + 2;
@@ -252,18 +252,18 @@ void PointCloudWidget::drawMesh(int rowBegin, int  rows, int  columnBegin, int  
     //    qDebug() << meshData;
 }
 
-void PointCloudWidget::clearPointCloud()
+void PointCloudWidget::clearPointCloudSlot()
 {
     pointCloudDataManager.clearData();
     update();
 }
 
-void PointCloudWidget::recvPointsData(message::msg::LidarData::SharedPtr msg)
+void PointCloudWidget::recvPointsDataSlot(message::msg::LidarData::SharedPtr msg)
 {
     pointCloudDataManager.addPoint(msg);
 }
 
-void PointCloudWidget::recvImuData(message::msg::ImuData::SharedPtr msg)
+void PointCloudWidget::recvImuDataSlot(message::msg::ImuData::SharedPtr msg)
 {
     pointCloudDataManager.addImuData(msg);
 }

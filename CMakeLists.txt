@@ -17,7 +17,6 @@ list(APPEND CMAKE_PREFIX_PATH "/home/chenzhen/Desktop/ros2_ws/install/message")
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
-find_package(sensor_msgs REQUIRED)
 find_package(message REQUIRED)
 
 
@@ -77,7 +76,7 @@ FILE(GLOB SOURCE
 )
 add_executable(main ${SOURCE})
 # ros2 依赖
-set(ROS2_DEPENDENCIES rclcpp rcl std_msgs sensor_msgs message)
+set(ROS2_DEPENDENCIES rclcpp rcl std_msgs message)
 # qt6 依赖
 set(QT6_DEPENDENCIES Qt6::Widgets Qt6::OpenGLWidgets)
 target_link_libraries(main

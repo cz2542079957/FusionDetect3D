@@ -176,7 +176,7 @@ private :
     int responseInterval =  10;
     //键盘按下按键列表
     QList<int> keys;
-    //基础速度2.0
+    //基础速度1.0
     float baseSpeed = 1.0;
     //移动速度
     float moveSpeed = 0.0150;
@@ -238,12 +238,19 @@ private :
 
 signals:
     void updateGraph();
+    //fov数据绑定
+    void fovChangedSignal(int value);
 
 private slots:
     //键盘事件处理程序
     void handler();
     //动画处理
     void animationHandler();
+
+    //fov数据绑定
+    void fovChangedSlot(int value);
+    //basespeed数据绑定
+    void baseSpeedSlot(float value);
 
 
 };

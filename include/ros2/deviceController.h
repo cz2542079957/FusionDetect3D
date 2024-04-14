@@ -18,9 +18,9 @@ private:
 
 signals:
     //发送点云数据
-    void sendPointsSignals(const message::msg::LidarData::SharedPtr msg);
+    void sendPointsSignal(const message::msg::LidarData::SharedPtr msg);
     //发送点云数据
-    void sendImuDataSignals(const message::msg::ImuData::SharedPtr msg);
+    void sendImuDataSignal(const message::msg::ImuData::SharedPtr msg);
 };
 
 

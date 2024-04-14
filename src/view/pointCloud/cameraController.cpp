@@ -78,6 +78,7 @@ void CameraController::wheelActionHandler(QWheelEvent *event)
         fov = 90;
     }
     emit updateGraph();
+    emit fovChangedSignal(fov);
 }
 
 void CameraController::mousepressActionHandler(QMouseEvent *event)
@@ -450,6 +451,17 @@ void CameraController::animationHandler()
         stopAnimation();
     }
     emit updateGraph();
+}
+
+void CameraController::fovChangedSlot(int value)
+{
+    fov = value;
+    emit updateGraph();
+}
+
+void CameraController::baseSpeedSlot(float value)
+{
+    baseSpeed = value;
 }
 
 void CameraController::resetAnimation()

@@ -31,18 +31,24 @@ private:
 
 
 signals:
-    void modeSelect(int mode);
-    void resetView();
-    void showAxis(bool val);
-    void showMesh(bool val);
-    void clearPointCloud();
+    void modeSelectSignal(int mode);
+    void resetViewSignal();
+    void showAxisSignal(bool val);
+    void showMeshSignal(bool val);
+    void clearPointCloudSignal();
+    void fovChangedSignal(int value);
+    void baseSpeedSignal(float value);
 
 private slots:
     void on_showMesh_clicked();
     void on_showAxis_clicked();
-
     void on_clearPointCloud_clicked();
     void on_comboBox_currentIndexChanged(int index);
     void on_resetView_clicked();
+    void on_fovController_valueChanged(int value);
+    void on_speedController_valueChanged(int value);
+
+    void fovChangedSlot(int value);
+    void on_baseSpeedController_valueChanged(int value);
 };
 #endif // MAINWINDOW_H

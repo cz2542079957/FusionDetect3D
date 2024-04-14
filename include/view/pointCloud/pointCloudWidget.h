@@ -90,27 +90,27 @@ protected:
     virtual void focusOutEvent(QFocusEvent *event) override;
 
 signals:
-    void infoTreeUpdate(const CameraController &camera);
+    void infoTreeUpdateSignal(const CameraController &camera);
 
 public slots:
     void onTimeout();
     //显示模式选择
-    void modeSelect(int mode);
+    void modeSelectSlot(int mode);
     //重置视角
-    void resetView();
+    void resetViewSlot();
     //显示坐标
-    void showAxis(bool val);
+    void showAxisSlot(bool val);
     //显示网格
-    void showMesh(bool val);
+    void showMeshSlot(bool val);
     //绘制地平线网格
-    void drawMesh(int rowBegin, int  rows, int  columnBegin, int  columns);
+    void drawMeshSlot(int rowBegin, int  rows, int  columnBegin, int  columns);
     //清空点云
-    void clearPointCloud();
+    void clearPointCloudSlot();
 
     //拿到点云数据
-    void recvPointsData(message::msg::LidarData::SharedPtr msg);
+    void recvPointsDataSlot(message::msg::LidarData::SharedPtr msg);
     //拿到惯导数据
-    void recvImuData(message::msg::ImuData::SharedPtr msg);
+    void recvImuDataSlot(message::msg::ImuData::SharedPtr msg);
 
 };
 #endif // POINTCLOUDWIDGET_H

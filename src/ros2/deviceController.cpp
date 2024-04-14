@@ -31,7 +31,7 @@ DeviceController::DeviceController()
 void DeviceController::lidarScanCallback(const message::msg::LidarData::SharedPtr msg)
 {
     // RCLCPP_INFO_STREAM(rclcpp::get_logger("lidarNodeSubscriber"),  msg->ranges.size());
-    emit sendPointsSignals(msg);
+    emit sendPointsSignal(msg);
     // for (size_t i = 0; i < msg->ranges.size(); ++i)
     // {
 
@@ -47,7 +47,7 @@ void DeviceController::imuDataCallback(const message::msg::ImuData::SharedPtr ms
     // {
     //     RCLCPP_INFO_STREAM(rclcpp::get_logger("DeviceController"),  i << " " << list[i].timestemp);
     // }
-    emit sendImuDataSignals(msg);
+    emit sendImuDataSignal(msg);
 }
 
 
