@@ -4,6 +4,7 @@
 MainWindow::MainWindow(QWidget *parent): QMainWindow(parent), ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    dc = new DeviceController();
     SignalsSlotsRegister();
 
     //    //取消标题栏
@@ -17,22 +18,23 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent), ui(new Ui::MainWin
 MainWindow::~MainWindow()
 {
     delete ui;
+    delete dc;
 }
 
 bool MainWindow::SignalsSlotsRegister()
 {
     //工具栏按钮绑定
-    connect(this, SIGNAL(modeSelectSignal(int)), ui->pointCloudWidget, SLOT(modeSelectSlot(int)));
     connect(this, SIGNAL(resetViewSignal()), ui->pointCloudWidget, SLOT(resetViewSlot()));
     connect(this, SIGNAL(showAxisSignal(bool)), ui->pointCloudWidget, SLOT(showAxisSlot(bool)));
     connect(this, SIGNAL(showMeshSignal(bool)), ui->pointCloudWidget, SLOT(showMeshSlot(bool)));
     connect(this, SIGNAL(clearPointCloudSignal()), ui->pointCloudWidget, SLOT(clearPointCloudSlot()));
 
     //ros节点收发链路
-    connect(&this->dc, SIGNAL(sendPointsSignal(message::msg::LidarData::SharedPtr)),
+    connect(this->dc, SIGNAL(sendPointsSignal(message::msg::LidarData::SharedPtr)),
             ui->pointCloudWidget,  SLOT(recvPointsDataSlot(message::msg::LidarData::SharedPtr)));
-    connect(&this->dc, SIGNAL(sendImuDataSignal(message::msg::ImuData::SharedPtr)),
+    connect(this->dc, SIGNAL(sendImuDataSignal(message::msg::ImuData::SharedPtr)),
             ui->pointCloudWidget, SLOT(recvImuDataSlot(message::msg::ImuData::SharedPtr)));
+    connect(&ui->pointCloudWidget->car, SIGNAL(sendControlSignal(int, int)), this->dc, SLOT(sendControlSlot(int, int)));
 
     //点云界面
     connect(&ui->pointCloudWidget->pointCloudDataManager, SIGNAL(updateGraph()), ui->pointCloudWidget, SLOT(update()));
@@ -51,7 +53,7 @@ bool MainWindow::SignalsSlotsRegister()
 
 void MainWindow::on_comboBox_currentIndexChanged(int index)
 {
-    emit modeSelectSignal(index);
+    ui->pointCloudWidget->camera.modeSelect(index);
 }
 
 void MainWindow::on_resetView_clicked()
@@ -106,4 +108,26 @@ void MainWindow::fovChangedSlot(int value)
     ui->fovController->setValue(value);
     ui->fovValue->setText(QString::number(value));
 }
+
+
+void MainWindow::on_carModeSelecter_currentIndexChanged(int index)
+{
+    ui->pointCloudWidget->car.setMode(index);
+    dc->carMaterNode->publishModeControl(index);
+}
+
+void MainWindow::on_enableKeyboardControl_clicked()
+{
+    if (ui->enableKeyboardControl->isChecked())
+    {
+        ui->pointCloudWidget->setEnableCarControl(true);
+    }
+    else
+    {
+        ui->pointCloudWidget->setEnableCarControl(false);
+    }
+}
+
+
+
 

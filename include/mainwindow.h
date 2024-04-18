@@ -24,7 +24,7 @@ private:
     //页面组件
     Ui::MainWindow *ui;
     //设备控制器
-    DeviceController dc;
+    DeviceController *dc;
 
     //信号槽注册中心
     bool SignalsSlotsRegister();
@@ -45,10 +45,13 @@ private slots:
     void on_clearPointCloud_clicked();
     void on_comboBox_currentIndexChanged(int index);
     void on_resetView_clicked();
-    void on_fovController_valueChanged(int value);
-    void on_speedController_valueChanged(int value);
 
+    void on_fovController_valueChanged(int value);
     void fovChangedSlot(int value);
     void on_baseSpeedController_valueChanged(int value);
+
+    void on_carModeSelecter_currentIndexChanged(int index);
+    void on_enableKeyboardControl_clicked();
+
 };
 #endif // MAINWINDOW_H

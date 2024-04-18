@@ -190,6 +190,38 @@ void CameraController::handler()
     {
         switch (key)
         {
+            case Qt::Key_Up:
+                if (keys.contains(Qt::Key_W))
+                {
+                    continue;
+                }
+                moveHandler(Qt::Key_W, speedMagnification);
+                break;
+
+            case Qt::Key_Down:
+                if (keys.contains(Qt::Key_S))
+                {
+                    continue;
+                }
+                moveHandler(Qt::Key_S, speedMagnification);
+                break;
+
+            case Qt::Key_Left:
+                if (keys.contains(Qt::Key_A))
+                {
+                    continue;
+                }
+                moveHandler(Qt::Key_A, speedMagnification);
+                break;
+
+            case Qt::Key_Right:
+                if (keys.contains(Qt::Key_D))
+                {
+                    continue;
+                }
+                moveHandler(Qt::Key_D, speedMagnification);
+                break;
+
             case Qt::Key_W:
             case Qt::Key_S:
                 if (keys.contains(Qt::Key_W) && keys.contains(Qt::Key_S))

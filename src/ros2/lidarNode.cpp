@@ -1,6 +1,6 @@
 #include "lidarNode.h"
 
-LidarNode::LidarNode(): Node("lidarNodeSubscriber")
+LidarNode::LidarNode(): Node("lidarNode")
 {
 }
 

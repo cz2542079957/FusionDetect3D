@@ -5,6 +5,23 @@ DeviceController::DeviceController()
     rclcpp::init(0, NULL);
     std::thread([this]()
     {
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("DeviceController"),  "小车控制板节点线程[启动]");
+        auto carMasterNode = std::make_shared<CarMasterNode>();
+        this->carMaterNode = carMasterNode;
+        carMasterNode->setEncoderDataCallback([this](const message::msg::CarEncoderData::SharedPtr msg) -> void
+        {
+            this->encoderDataCallback(msg);
+        });
+        carMasterNode->setServoDataCallback([this](const message::msg::CarServoData::SharedPtr msg) -> void
+        {
+            this->servoDataCallback(msg);
+        });
+        carMasterNode->run();
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("DeviceController"),  "小车控制板节点线程[退出]");
+    }).detach();
+
+    std::thread([this]()
+    {
         RCLCPP_INFO_STREAM(rclcpp::get_logger("DeviceController"),  "激光雷达节点线程[启动]");
         auto lidarNode = std::make_shared<LidarNode>();
         lidarNode->setCallback([this](const message::msg::LidarData::SharedPtr msg) -> void
@@ -48,6 +65,23 @@ void DeviceController::imuDataCallback(const message::msg::ImuData::SharedPtr ms
     //     RCLCPP_INFO_STREAM(rclcpp::get_logger("DeviceController"),  i << " " << list[i].timestemp);
     // }
     emit sendImuDataSignal(msg);
+}
+
+void DeviceController::encoderDataCallback(const message::msg::CarEncoderData::SharedPtr msg)
+{
+
+}
+
+void DeviceController::servoDataCallback(const message::msg::CarServoData::SharedPtr msg)
+{
+
+}
+
+
+void DeviceController::sendControlSlot(int state, int speed)
+{
+    // qDebug() << state << " " << speed;
+    carMaterNode->publishMotionControl(state, speed);
 }
 
 

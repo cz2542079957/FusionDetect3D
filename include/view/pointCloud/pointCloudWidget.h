@@ -2,6 +2,7 @@
 #define POINTCLOUDWIDGET_H
 
 #include "cameraController.h"
+#include "carController.h"
 #include "pointCloudDataManager.h"
 
 #include "QOpenGLWidget"
@@ -19,6 +20,10 @@ public:
     PointCloudDataManager pointCloudDataManager;
     //相机控制器
     CameraController camera;
+    //小车控制器
+    CarController car;
+
+    void setEnableCarControl(bool val);
 
 private :
     //变换矩阵(模型、视野、投影)
@@ -70,7 +75,8 @@ private :
     //点大小
     float pointSize = 2;
 
-
+    //是否允许小车控制
+    bool enableCarControl = false;
     //按键监听
     void keyPressEvent(QKeyEvent *event) override;
     void keyReleaseEvent(QKeyEvent *event)override;
@@ -94,8 +100,6 @@ signals:
 
 public slots:
     void onTimeout();
-    //显示模式选择
-    void modeSelectSlot(int mode);
     //重置视角
     void resetViewSlot();
     //显示坐标

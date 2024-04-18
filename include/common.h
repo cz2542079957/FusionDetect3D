@@ -15,5 +15,9 @@
 #include "rclcpp/rclcpp.hpp"
 #include "message/msg/lidar_data.hpp"
 #include "message/msg/imu_data.hpp"
+#include "message/msg/car_encoder_data.hpp"
+#include "message/msg/car_motion_control.hpp"
+#include "message/msg/car_servo_data.hpp"
+#include "message/msg/mode_control.hpp"
 
 

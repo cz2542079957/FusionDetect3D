@@ -7,9 +7,6 @@ class CameraController: public QWidget
 {
     Q_OBJECT
 public:
-
-
-public:
     CameraController();
     ~CameraController();
 

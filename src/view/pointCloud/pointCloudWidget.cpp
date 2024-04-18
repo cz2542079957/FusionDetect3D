@@ -22,14 +22,41 @@ PointCloudWidget::~PointCloudWidget()
     doneCurrent();
 }
 
+void PointCloudWidget::setEnableCarControl(bool val)
+{
+    enableCarControl = val;
+    if (val)
+    {
+        camera.clearKeys();
+    }
+    else
+    {
+        car.clearKeys();
+    }
+}
+
 void PointCloudWidget::keyPressEvent(QKeyEvent *event)
 {
-    camera.keypressActionHandler(event);
+    if (enableCarControl)
+    {
+        car.keypressActionHandler(event);
+    }
+    else
+    {
+        camera.keypressActionHandler(event);
+    }
 }
 
 void PointCloudWidget::keyReleaseEvent(QKeyEvent *event)
 {
-    camera.keyreleaseActionHandler(event);
+    if (enableCarControl)
+    {
+        car.keyreleaseActionHandler(event);
+    }
+    else
+    {
+        camera.keyreleaseActionHandler(event);
+    }
 }
 
 void PointCloudWidget::mousePressEvent(QMouseEvent *event)
@@ -193,6 +220,7 @@ void PointCloudWidget::focusOutEvent(QFocusEvent *event)
     Q_UNUSED(event);
     //失去焦点，相机控制器按键清空
     camera.clearKeys();
+    car.clearKeys();
 }
 
 
@@ -201,11 +229,6 @@ void PointCloudWidget::onTimeout()
     makeCurrent();
     doneCurrent();
     update();
-}
-
-void PointCloudWidget::modeSelectSlot(int mode)
-{
-    camera.modeSelect(mode);
 }
 
 void PointCloudWidget::resetViewSlot()
