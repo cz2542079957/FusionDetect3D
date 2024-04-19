@@ -48,7 +48,7 @@ void CarController::clearKeys()
 
 void CarController::handler()
 {
-    int state = 0, speed = 20;
+    int state = 0;
     if (keys.size() >= 2)
     {
         return;
@@ -80,4 +80,9 @@ void CarController::handler()
     }
     // qDebug() << state ;
     emit sendControlSignal(state, speed);
+}
+
+void CarController::carSpeedSlot(int value)
+{
+    speed = value;
 }

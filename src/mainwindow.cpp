@@ -1,7 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-MainWindow::MainWindow(QWidget *parent): QMainWindow(parent), ui(new Ui::MainWindow)
+MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
     dc = new DeviceController();
@@ -23,33 +23,32 @@ MainWindow::~MainWindow()
 
 bool MainWindow::SignalsSlotsRegister()
 {
-    //工具栏按钮绑定
+    // 工具栏按钮绑定
     connect(this, SIGNAL(resetViewSignal()), ui->pointCloudWidget, SLOT(resetViewSlot()));
     connect(this, SIGNAL(showAxisSignal(bool)), ui->pointCloudWidget, SLOT(showAxisSlot(bool)));
     connect(this, SIGNAL(showMeshSignal(bool)), ui->pointCloudWidget, SLOT(showMeshSlot(bool)));
     connect(this, SIGNAL(clearPointCloudSignal()), ui->pointCloudWidget, SLOT(clearPointCloudSlot()));
+    connect(&ui->pointCloudWidget->camera, SIGNAL(fovChangedSignal(int)), this, SLOT(fovChangedSlot(int)));
+    connect(this, SIGNAL(fovChangedSignal(int)), &ui->pointCloudWidget->camera, SLOT(fovChangedSlot(int)));
+    connect(this, SIGNAL(baseSpeedSignal(float)), &ui->pointCloudWidget->camera, SLOT(baseSpeedSlot(float)));
+    connect(this, SIGNAL(carSpeedSignal(int)), &ui->pointCloudWidget->car, SLOT(carSpeedSlot(int)));
 
-    //ros节点收发链路
+    // ros节点收发链路
     connect(this->dc, SIGNAL(sendPointsSignal(message::msg::LidarData::SharedPtr)),
-            ui->pointCloudWidget,  SLOT(recvPointsDataSlot(message::msg::LidarData::SharedPtr)));
+            ui->pointCloudWidget, SLOT(recvPointsDataSlot(message::msg::LidarData::SharedPtr)));
     connect(this->dc, SIGNAL(sendImuDataSignal(message::msg::ImuData::SharedPtr)),
             ui->pointCloudWidget, SLOT(recvImuDataSlot(message::msg::ImuData::SharedPtr)));
     connect(&ui->pointCloudWidget->car, SIGNAL(sendControlSignal(int, int)), this->dc, SLOT(sendControlSlot(int, int)));
 
-    //点云界面
+    // 点云界面
     connect(&ui->pointCloudWidget->pointCloudDataManager, SIGNAL(updateGraph()), ui->pointCloudWidget, SLOT(update()));
     connect(&ui->pointCloudWidget->camera, SIGNAL(updateGraph()), ui->pointCloudWidget, SLOT(update()));
-    connect(&ui->pointCloudWidget->camera, SIGNAL(fovChangedSignal(int)), this, SLOT(fovChangedSlot(int)));
-    connect(this, SIGNAL(fovChangedSignal(int)), &ui->pointCloudWidget->camera, SLOT(fovChangedSlot(int)));
-    connect(this, SIGNAL(baseSpeedSignal(float)), &ui->pointCloudWidget->camera, SLOT(baseSpeedSlot(float)));
 
-
-    //树形数据接收链路
+    // 树形数据接收链路
     connect(ui->pointCloudWidget, SIGNAL(infoTreeUpdateSignal(CameraController)), ui->infoTree, SLOT(update(CameraController)));
 
     return true;
 }
-
 
 void MainWindow::on_comboBox_currentIndexChanged(int index)
 {
@@ -109,7 +108,6 @@ void MainWindow::fovChangedSlot(int value)
     ui->fovValue->setText(QString::number(value));
 }
 
-
 void MainWindow::on_carModeSelecter_currentIndexChanged(int index)
 {
     ui->pointCloudWidget->car.setMode(index);
@@ -128,6 +126,8 @@ void MainWindow::on_enableKeyboardControl_clicked()
     }
 }
 
-
-
-
+void MainWindow::on_carSpeedController_valueChanged(int value)
+{
+    ui->carSpeedValue->setText(QString::number(value));
+    emit carSpeedSignal(value);
+}

@@ -19,8 +19,9 @@ public:
     void clearKeys();
 
 private:
-    //模式： 0静止     1扫描模式    2自由移动
+    //模式： 0静止     1扫描模式    2运动模式
     int mode = 0;
+    int speed = 30;
 
     //定时处理
     QTimer timer;
@@ -34,6 +35,8 @@ signals:
 
 public slots:
     void handler();
+
+    void carSpeedSlot(int value);
 
 };
 

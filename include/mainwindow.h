@@ -38,6 +38,7 @@ signals:
     void clearPointCloudSignal();
     void fovChangedSignal(int value);
     void baseSpeedSignal(float value);
+    void carSpeedSignal(int value);
 
 private slots:
     void on_showMesh_clicked();
@@ -53,5 +54,6 @@ private slots:
     void on_carModeSelecter_currentIndexChanged(int index);
     void on_enableKeyboardControl_clicked();
 
+    void on_carSpeedController_valueChanged(int value);
 };
 #endif // MAINWINDOW_H

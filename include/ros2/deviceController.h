@@ -13,7 +13,6 @@ public:
 
     std::shared_ptr<CarMasterNode> carMaterNode;
 
-
 private:
     //雷达扫描数据回调函数，用于对接ui线程
     void lidarScanCallback(const message::msg::LidarData::SharedPtr msg);
@@ -21,7 +20,7 @@ private:
     void imuDataCallback(const message::msg::ImuData::SharedPtr msg);
     //编码器数据回调函数
     void encoderDataCallback(const message::msg::CarEncoderData::SharedPtr msg);
-    // 舵机数据回调函数
+    //舵机数据回调函数
     void servoDataCallback(const message::msg::CarServoData::SharedPtr msg);
 
 signals:
