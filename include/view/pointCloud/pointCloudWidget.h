@@ -113,8 +113,12 @@ public slots:
 
     //拿到点云数据
     void recvPointsDataSlot(message::msg::LidarData::SharedPtr msg);
+    //拿到舵机数据
+    void recvServoDataSlot(message::msg::CarServoData::SharedPtr msg);
     //拿到惯导数据
-    void recvImuDataSlot(message::msg::ImuData::SharedPtr msg);
+    void recvLidarImuDataSlot(message::msg::ImuData::SharedPtr msg);
+    //拿到编码器数据
+    void recvEncoderDataSlot(message::msg::CarEncoderData::SharedPtr msg);
 
 };
 #endif // POINTCLOUDWIDGET_H

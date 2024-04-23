@@ -3,14 +3,34 @@
 #include "pointCloudBase.h"
 
 
-//默认最大雷达原始数据缓存大小（单位：LidarDataFrame）
+//默认最大雷达原始数据缓冲区大小（单位：LidarDataFrame）
 #define DEFAULT_MAX_POINTS_BUFFER_SIZE 1000 * 1000
-//默认最大imu原始数据缓存大小（单位：ImuDataFrame）
+//默认最大舵机数据原始数据缓冲区大小
+#define DEFAULT_MAX_SERVO_DATA_BUFFER_SIZE 1000 * 1000
+//默认最大imu原始数据缓冲区大小（单位：ImuDataFrame）
 #define DEFAULT_MAX_IMU_DATA_BUFFER_SIZE 1000 * 1000
+//默认最大编码器数据原始数据缓冲区大小
+#define DEFAULT_MAX_ENCODER_DATA_BUFFER_SIZE 1000 * 1000
 //默认最大缓存大小（单位：PointCloudVertex）
 #define DEFAULT_MAX_CACHE_SIZE 10 * 1000 * 1000
 //默认融合数据精度（纳秒）
-#define DEFAULT_FUSION_ACCURACY 1000000 * 5
+#define DEFAULT_FUSION_ACCURACY 5000000ll
+//默认融合最小精度（纳秒）
+#define DEFAULT_MIN_FUSION_ACCURACY 1000000ll
+
+
+//lidar数据溢出自动清理大小
+#define LIDAR_DATA_AUTO_CLEAN_SIZE 100000
+//lidarImu数据溢出自动清理大小
+#define LIDAR_IMU_DATA_AUTO_CLEAN_SIZE 5000
+
+struct Position
+{
+    //二维坐标
+    QVector2D pos;
+    //朝向方位
+    QVector2D direct;
+};
 
 //点云 点结构
 struct PointCloudVertex
@@ -45,8 +65,12 @@ public:
 
     //接收点云原始数据
     bool addPoint(message::msg::LidarData::SharedPtr &_newData);
+    //接收舵机原始数据
+    bool addServoData(message::msg::CarServoData::SharedPtr &_newData);
     //接收imu原始数据
-    bool addImuData(message::msg::ImuData::SharedPtr &_newData);
+    bool addLidarImuData(message::msg::ImuData::SharedPtr &_newData);
+    //接收编码器原始数据
+    bool addEncoderData(message::msg::CarEncoderData::SharedPtr &_newData);
     //清空
     void clearData();
 
@@ -65,16 +89,23 @@ private:
     //定时处理周期
     int tsakTimeInterval = 100;
 
-
     unsigned long maxPointsBufferSize = DEFAULT_MAX_POINTS_BUFFER_SIZE;
-    unsigned long maxImuDataBufferSize = DEFAULT_MAX_IMU_DATA_BUFFER_SIZE;
+    unsigned long maxServoDataBufferSize = DEFAULT_MAX_SERVO_DATA_BUFFER_SIZE;
+    unsigned long maxLidarImuDataBufferSize = DEFAULT_MAX_IMU_DATA_BUFFER_SIZE;
+    unsigned long maxEncoderDataBufferSize = DEFAULT_MAX_ENCODER_DATA_BUFFER_SIZE;
     //点云原始数据缓冲区
     std::vector<message::msg::LidarDataFrame> pointsBuffer;
+    //舵机原始数据缓冲区
+    std::vector<message::msg::CarServoData> servoDataBuffer;
     //imu原始数据缓冲区
-    std::vector<message::msg::ImuDataFrame> imuDataBuffer;
+    std::vector<message::msg::ImuDataFrame> lidarImuDataBuffer;
+    //编码器原始数据缓冲区
+    std::vector<message::msg::CarEncoderData> encoderDataBuffer;
 
     //最大Cache大小
     unsigned long maxCacheSize = DEFAULT_MAX_CACHE_SIZE;
+    //方位参数
+    std::vector<Position> positions;
     //当前数据
     std::vector<PointCloudVertex> data;
     //每一批数据的大小(单位：PointCloudVertex)
@@ -85,15 +116,19 @@ private:
 
     //数据融合
     bool fuseData();
-    //是否启用自定义精度
-    bool enableCustomAccuracy = false;
+    //融合方位数据 (imu和encoder)
+    bool fusePositionData();
+    //融合点云数据 (position、lidar以及servo)
+    bool fuseLidarData();
+    //是否启用自适应精度
+    bool enableAutoAccuracy = true;
     //数据融合精度，值越小越高，超过误差的点会放弃 (默认5ms误差)
     long long fusionAccuracy = DEFAULT_FUSION_ACCURACY;
 
     //处理点的颜色（进行颜色层次划分）
     bool handlePointsColor();
     //处理最近n毫秒的点颜色
-    long long recentColorHandleTime = 300;
+    long long recentColorHandleTime = 200;
     //新旧点颜色
     float redNew =  255,  greenNew  =  31, blueNew = 0;
     float redOld = 28, greenOld = 126, blueOld = 214;

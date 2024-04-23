@@ -1,16 +1,16 @@
-#include "imuNode.h"
+#include "lidarImuNode.h"
 
-ImuNode::ImuNode(): Node("imuNode")
+LidarImuNode::LidarImuNode(): Node("lidarImuNode")
 {
 
 }
 
-void ImuNode::setCallback(std::function<void (const message::msg::ImuData::SharedPtr msg)> call)
+void LidarImuNode::setCallback(std::function<void (const message::msg::ImuData::SharedPtr msg)> call)
 {
     subscription = this->create_subscription<message::msg::ImuData>(nodePrefix + "/imuData", rclcpp::QoS(rclcpp::KeepLast(10)), call);
 }
 
-void ImuNode::run()
+void LidarImuNode::run()
 {
     executor = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
     executor->add_node(this->shared_from_this());

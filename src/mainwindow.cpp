@@ -34,11 +34,11 @@ bool MainWindow::SignalsSlotsRegister()
     connect(this, SIGNAL(carSpeedSignal(int)), &ui->pointCloudWidget->car, SLOT(carSpeedSlot(int)));
 
     // ros节点收发链路
-    connect(this->dc, SIGNAL(sendPointsSignal(message::msg::LidarData::SharedPtr)),
-            ui->pointCloudWidget, SLOT(recvPointsDataSlot(message::msg::LidarData::SharedPtr)));
-    connect(this->dc, SIGNAL(sendImuDataSignal(message::msg::ImuData::SharedPtr)),
-            ui->pointCloudWidget, SLOT(recvImuDataSlot(message::msg::ImuData::SharedPtr)));
-    connect(&ui->pointCloudWidget->car, SIGNAL(sendControlSignal(int, int)), this->dc, SLOT(sendControlSlot(int, int)));
+    connect(this->dc, &DeviceController::sendPointsSignal, ui->pointCloudWidget, &PointCloudWidget::recvPointsDataSlot);
+    connect(this->dc, &DeviceController::sendServoDataSignal, ui->pointCloudWidget, &PointCloudWidget::recvServoDataSlot);
+    connect(this->dc, &DeviceController::sendLidarImuDataSignal, ui->pointCloudWidget, &PointCloudWidget::recvLidarImuDataSlot);
+    connect(this->dc, &DeviceController::sendEncoderDataSignal, ui->pointCloudWidget, &PointCloudWidget::recvEncoderDataSlot);
+    connect(&ui->pointCloudWidget->car, &CarController::sendControlSignal, this->dc, &DeviceController::sendControlSlot);
 
     // 点云界面
     connect(&ui->pointCloudWidget->pointCloudDataManager, SIGNAL(updateGraph()), ui->pointCloudWidget, SLOT(update()));

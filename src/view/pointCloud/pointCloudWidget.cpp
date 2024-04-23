@@ -286,8 +286,18 @@ void PointCloudWidget::recvPointsDataSlot(message::msg::LidarData::SharedPtr msg
     pointCloudDataManager.addPoint(msg);
 }
 
-void PointCloudWidget::recvImuDataSlot(message::msg::ImuData::SharedPtr msg)
+void PointCloudWidget::recvServoDataSlot(message::msg::CarServoData::SharedPtr msg)
 {
-    pointCloudDataManager.addImuData(msg);
+    pointCloudDataManager.addServoData(msg);
+}
+
+void PointCloudWidget::recvLidarImuDataSlot(message::msg::ImuData::SharedPtr msg)
+{
+    pointCloudDataManager.addLidarImuData(msg);
+}
+
+void PointCloudWidget::recvEncoderDataSlot(message::msg::CarEncoderData::SharedPtr msg)
+{
+    pointCloudDataManager.addEncoderData(msg);
 }
 
