@@ -22,6 +22,8 @@ private:
     void encoderDataCallback(const message::msg::CarEncoderData::SharedPtr msg);
     //舵机数据回调函数
     void servoDataCallback(const message::msg::CarServoData::SharedPtr msg);
+    //电池电压数据回调函数
+    void voltageDataCallback(const message::msg::CarVotageData::SharedPtr msg);
 
 signals:
     //发送点云数据
@@ -32,6 +34,8 @@ signals:
     void sendLidarImuDataSignal(const message::msg::ImuData::SharedPtr msg);
     //发送编码器数据
     void sendEncoderDataSignal(const message::msg::CarEncoderData::SharedPtr msg);
+    //发送电池电压数据
+    void sendVoltageDataSignal(const message::msg::CarVotageData::SharedPtr msg);
 
 
 public slots:

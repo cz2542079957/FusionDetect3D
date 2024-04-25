@@ -18,6 +18,12 @@ void CarMasterNode::setServoDataCallback(std::function<void (const message::msg:
                           callback);
 }
 
+void CarMasterNode::setVoltageDataCallback(std::function<void (const message::msg::CarVotageData::SharedPtr)> callback)
+{
+    voltageDataSubscriber = this->create_subscription<message::msg::CarVotageData>(nodePrefix + "/voltageData", rclcpp::QoS(rclcpp::KeepLast(10)),
+                            callback);
+}
+
 void CarMasterNode::publishModeControl(int mode)
 {
     auto message = std::make_shared<message::msg::ModeControl>();

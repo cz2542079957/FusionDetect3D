@@ -9,6 +9,8 @@ public:
     void setEncoderDataCallback(std::function<void(const message::msg::CarEncoderData::SharedPtr msg)> callback);
     //设置舵机数据回调
     void setServoDataCallback(std::function<void(const message::msg::CarServoData::SharedPtr msg)> callback);
+    //设置电压数据回调
+    void setVoltageDataCallback(std::function<void(const message::msg::CarVotageData::SharedPtr msg)> callback);
 
     //发布模式控制数据
     void publishModeControl(int mode);
@@ -24,6 +26,8 @@ private:
     rclcpp::Subscription<message::msg::CarEncoderData>::SharedPtr encoderDataSubscriber;
     // 舵机数据订阅者
     rclcpp::Subscription<message::msg::CarServoData>::SharedPtr servoDataSubscriber;
+    // 电压数据订阅者
+    rclcpp::Subscription<message::msg::CarVotageData>::SharedPtr voltageDataSubscriber;
     // 模式数据发布者
     rclcpp::Publisher<message::msg::ModeControl>::SharedPtr modeControlPublisher;
     // 运动控制发布者

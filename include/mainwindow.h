@@ -55,5 +55,7 @@ private slots:
     void on_enableKeyboardControl_clicked();
 
     void on_carSpeedController_valueChanged(int value);
+
+    void sendVoltageDataSlot(const message::msg::CarVotageData::SharedPtr msg);
 };
 #endif // MAINWINDOW_H

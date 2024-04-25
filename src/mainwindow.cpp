@@ -39,6 +39,7 @@ bool MainWindow::SignalsSlotsRegister()
     connect(this->dc, &DeviceController::sendLidarImuDataSignal, ui->pointCloudWidget, &PointCloudWidget::recvLidarImuDataSlot);
     connect(this->dc, &DeviceController::sendEncoderDataSignal, ui->pointCloudWidget, &PointCloudWidget::recvEncoderDataSlot);
     connect(&ui->pointCloudWidget->car, &CarController::sendControlSignal, this->dc, &DeviceController::sendControlSlot);
+    connect(this->dc, &DeviceController::sendVoltageDataSignal, this, &MainWindow::sendVoltageDataSlot);
 
     // 点云界面
     connect(&ui->pointCloudWidget->pointCloudDataManager, SIGNAL(updateGraph()), ui->pointCloudWidget, SLOT(update()));
@@ -130,4 +131,31 @@ void MainWindow::on_carSpeedController_valueChanged(int value)
 {
     ui->carSpeedValue->setText(QString::number(value));
     emit carSpeedSignal(value);
+}
+
+void MainWindow::sendVoltageDataSlot(const message::msg::CarVotageData::SharedPtr msg)
+{
+    float percentage =  (msg->voltage - 9.6) / 3.0;
+    if (percentage > 1)
+    {
+        percentage = 1;
+    }
+    if (percentage < 0)
+    {
+        percentage = 0;
+    }
+    // qDebug() << msg->voltage << " "  << percentage;
+    ui->voltageBar->setValue(percentage * 100);
+    if (percentage > 0.8)
+    {
+        ui->voltageBar->setStyleSheet("QProgressBar{background:white; color: white; text-align:center; } QProgressBar::chunk{background:#37b24d}");
+    }
+    else if (percentage > 0.4)
+    {
+        ui->voltageBar->setStyleSheet("QProgressBar{background:white; text-align:center;} QProgressBar::chunk{background:#ffb90f}");
+    }
+    else
+    {
+        ui->voltageBar->setStyleSheet("QProgressBar{background:white; text-align:center;} QProgressBar::chunk{background:#ff3300}");
+    }
 }
