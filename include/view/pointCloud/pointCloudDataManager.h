@@ -47,7 +47,7 @@ struct BatchFrame
     // 批次大小
     unsigned long size;
     // 首个点时间戳
-    long long timeStemp;
+    long long timestamp;
     // 首个点在data数据中的index
     unsigned long firstDataIndex = 0;
 };
