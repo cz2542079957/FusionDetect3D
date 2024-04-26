@@ -38,6 +38,7 @@ bool MainWindow::SignalsSlotsRegister()
     connect(this->dc, &DeviceController::sendServoDataSignal, ui->pointCloudWidget, &PointCloudWidget::recvServoDataSlot);
     connect(this->dc, &DeviceController::sendLidarImuDataSignal, ui->pointCloudWidget, &PointCloudWidget::recvLidarImuDataSlot);
     connect(this->dc, &DeviceController::sendEncoderDataSignal, ui->pointCloudWidget, &PointCloudWidget::recvEncoderDataSlot);
+    connect(this->dc, &DeviceController::sendCarImuDataSignal, ui->pointCloudWidget, &PointCloudWidget::recvCarImuDataSlot);
     connect(&ui->pointCloudWidget->car, &CarController::sendControlSignal, this->dc, &DeviceController::sendControlSlot);
     connect(this->dc, &DeviceController::sendVoltageDataSignal, this, &MainWindow::sendVoltageDataSlot);
 

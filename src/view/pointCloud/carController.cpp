@@ -48,35 +48,75 @@ void CarController::clearKeys()
 
 void CarController::handler()
 {
-    int state = 0;
+    int state = MOTION_STOP;
+    //只允许单键
     if (keys.size() >= 2)
     {
         return;
     }
     if (keys.size() == 0)
     {
-        state = 0;
+        state = MOTION_STOP;
+        emit sendControlSignal(state, speed);
+        return;
     }
 
-    // if (!(keys.contains(Qt::Key_W) && keys.contains(Qt::Key_S)))
-    // {
-    //     qDebug() << keys;
-    // }
-    if (keys.contains(Qt::Key_W))
+    int key = keys.first();
+    //扫描模式
+    if (mode == 1)
     {
-        state = 1;
+        switch (key)
+        {
+            case Qt::Key_W:
+                state = MOTION_FORWARD;
+                break;
+            case Qt::Key_S:
+                state = MOTION_BACKWARD;
+                break;
+            case Qt::Key_A:
+                state = MOTION_TURN_LEFT;
+                break;
+            case Qt::Key_D:
+                state = MOTION_TURN_RIGHT;
+                break;
+        }
     }
-    else if (keys.contains(Qt::Key_S))
+    else if (mode == 2)
     {
-        state = 2;
-    }
-    else if (keys.contains(Qt::Key_A))
-    {
-        state = 3;
-    }
-    else if (keys.contains(Qt::Key_D))
-    {
-        state = 4;
+        //运动模式
+        switch (key)
+        {
+            case Qt::Key_W:
+                state = MOTION_FORWARD;
+                break;
+            case Qt::Key_S:
+                state = MOTION_BACKWARD;
+                break;
+            case Qt::Key_A:
+                state = MOTION_TURN_LEFT;
+                break;
+            case Qt::Key_D:
+                state = MOTION_TURN_RIGHT;
+                break;
+            case Qt::Key_Q:
+                state = MOTION_LEFT;
+                break;
+            case Qt::Key_E:
+                state = MOTION_RIGHT;
+                break;
+            case Qt::Key_7:
+                state = MOTION_FRONT_LEFT;
+                break;
+            case Qt::Key_9:
+                state = MOTION_FRONT_RIGHT;
+                break;
+            case Qt::Key_1:
+                state = MOTION_BACK_LEFT;
+                break;
+            case Qt::Key_3:
+                state = MOTION_BACK_RIGHT;
+                break;
+        }
     }
     // qDebug() << state ;
     emit sendControlSignal(state, speed);

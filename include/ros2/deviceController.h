@@ -2,6 +2,7 @@
 #define DEVICECONTROLLER_H
 #include <QObject>
 #include <carMasterNode.h>
+#include "carImuNode.h"
 #include <lidarNode.h>
 #include <lidarImuNode.h>
 
@@ -20,6 +21,8 @@ private:
     void lidarImuDataCallback(const message::msg::ImuData::SharedPtr msg);
     //编码器数据回调函数
     void encoderDataCallback(const message::msg::CarEncoderData::SharedPtr msg);
+    //惯导模块数据回调函数
+    void carImuDataCallback(const message::msg::ImuData::SharedPtr msg);
     //舵机数据回调函数
     void servoDataCallback(const message::msg::CarServoData::SharedPtr msg);
     //电池电压数据回调函数
@@ -34,6 +37,8 @@ signals:
     void sendLidarImuDataSignal(const message::msg::ImuData::SharedPtr msg);
     //发送编码器数据
     void sendEncoderDataSignal(const message::msg::CarEncoderData::SharedPtr msg);
+    //发送carIMU数据
+    void sendCarImuDataSignal(const message::msg::ImuData::SharedPtr msg);
     //发送电池电压数据
     void sendVoltageDataSignal(const message::msg::CarVotageData::SharedPtr msg);
 

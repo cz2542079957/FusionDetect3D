@@ -6,6 +6,7 @@ PointCloudDataManager::PointCloudDataManager(int _maxCacheSize)
     servoDataBuffer.reserve(maxServoDataBufferSize);
     lidarImuDataBuffer.reserve(maxLidarImuDataBufferSize);
     encoderDataBuffer.reserve(maxEncoderDataBufferSize);
+    carImuDataBuffer.reserve(maxCarImuDataBufferSize);
 
     Position beginPosition;
     beginPosition.pos.setX(0), beginPosition.pos.setY(0);
@@ -28,6 +29,7 @@ bool PointCloudDataManager::addPoint(message::msg::LidarData::SharedPtr &_newDat
 
 bool PointCloudDataManager::addServoData(message::msg::CarServoData::SharedPtr &_newData)
 {
+    Q_UNUSED(_newData);
     // servoDataBuffer.push_back(*_newData);
     return true;
 }
@@ -35,42 +37,6 @@ bool PointCloudDataManager::addServoData(message::msg::CarServoData::SharedPtr &
 bool PointCloudDataManager::addLidarImuData(message::msg::ImuData::SharedPtr &_newData)
 {
     // qDebug() << lidarImuDataBuffer.size();
-    // 对数据进行插帧
-    // std::vector<message::msg::ImuDataFrame> *data = &(_newData->data);
-    // qDebug() << data->size();
-    // for (size_t i = 1; i < data->size(); i ++)
-    // {
-    //     if ((*data)[i].timestamp - (*data)[i - 1].timestamp < DEFAULT_MIN_FUSION_ACCURACY )
-    //     {
-    //         //时间差过小，视为重复数据
-    //         continue;
-    //     }
-    //     else
-    //     {
-    //         // qDebug() <<
-    //         //插一帧
-    //         message::msg::ImuDataFrame insertFrame;
-    //         insertFrame.timestamp = ((*data)[i].timestamp + (*data)[i - 1].timestamp) / 2;
-    //         insertFrame.quaternion.quaternion_0 = ((*data)[i].quaternion.quaternion_0 + (*data)[i - 1].quaternion.quaternion_0) / 2;
-    //         insertFrame.quaternion.quaternion_1 = ((*data)[i].quaternion.quaternion_1 + (*data)[i - 1].quaternion.quaternion_1) / 2;
-    //         insertFrame.quaternion.quaternion_2 = ((*data)[i].quaternion.quaternion_2 + (*data)[i - 1].quaternion.quaternion_2) / 2;
-    //         insertFrame.quaternion.quaternion_3 = ((*data)[i].quaternion.quaternion_3 + (*data)[i - 1].quaternion.quaternion_3) / 2;
-
-    //         lidarImuDataBuffer.push_back(insertFrame);
-    //         lidarImuDataBuffer.push_back((*data)[i]);
-    //     }
-    // }
-    // for (auto &i : _newData->data)
-    // {
-    //     if (i.angular_velocity.angular_velocity_z < 0)
-    //     {
-    //         i.timestamp -= 100000000;
-    //     }
-    //     else
-    //     {
-    //         i.timestamp += 100000000;
-    //     }
-    // }
     lidarImuDataBuffer.insert(lidarImuDataBuffer.end(), _newData->data.begin(), _newData->data.end());
     return true;
 }
@@ -79,6 +45,12 @@ bool PointCloudDataManager::addEncoderData(message::msg::CarEncoderData::SharedP
 {
     // qDebug() << _newData->encoder1 << " " << _newData->encoder2;
     encoderDataBuffer.push_back(*_newData);
+    return true;
+}
+
+bool PointCloudDataManager::addCarImuData(message::msg::ImuData::SharedPtr &_newData)
+{
+    carImuDataBuffer.insert(carImuDataBuffer.end(), _newData->data.begin(), _newData->data.end());
     return true;
 }
 
@@ -107,6 +79,7 @@ void PointCloudDataManager::clearData()
     servoDataBuffer.clear();
     lidarImuDataBuffer.clear();
     encoderDataBuffer.clear();
+    carImuDataBuffer.clear();
 }
 
 unsigned long PointCloudDataManager::getCurrentCacheSize() const
@@ -139,106 +112,33 @@ void PointCloudDataManager::scheduledTask()
 
 bool PointCloudDataManager::fuseData()
 {
-    // size_t minLen = std::min(pointsBuffer.size(), imuDataBuffer.size());
-    // if (minLen == 0 )
-    // {
-    //     return false;
-    // }
     bool updateFlag = false;
-
     updateFlag |= fusePositionData();
     updateFlag |= fuseLidarData();
     return updateFlag;
-
-    // size_t count = 0 ;
-    // float ang2radCoe = M_PI / 180.0f;
-    // size_t imuIndex = 0;
-    // size_t pointsIndex = 0;
-    // size_t firstDataIndex = data.size() - 1;
-    // //由于imu数据密度较低，此处作为缓存优化性能
-    // size_t lastImuIndex = 0;
-    // double quaternion0 = imuDataBuffer[lastImuIndex].quaternion.quaternion_0;
-    // double quaternion1 = imuDataBuffer[lastImuIndex].quaternion.quaternion_1;
-    // double quaternion2 = imuDataBuffer[lastImuIndex].quaternion.quaternion_2;
-    // double quaternion3 = imuDataBuffer[lastImuIndex].quaternion.quaternion_3;
-    // Eigen::Quaterniond quaternion = Eigen::Quaterniond{quaternion0, quaternion1, quaternion2, quaternion3};
-    // float red = RGBNormalized(redOld), green = RGBNormalized(greenOld), blue = RGBNormalized(blueOld);
-    // while (imuIndex  < imuDataBuffer.size() && pointsIndex < pointsBuffer.size())
-    // {
-    //     // RCLCPP_INFO(rclcpp::get_logger("main"), "1");
-    //     if (pointsBuffer[pointsIndex].timestamp - imuDataBuffer[imuIndex].timestamp > fusionAccuracy)
-    //     {
-    //         imuIndex ++;
-    //     }
-    //     else if (abs(pointsBuffer[pointsIndex].timestamp - imuDataBuffer[imuIndex].timestamp) < fusionAccuracy)
-    //     {
-    //         if (pointsBuffer[pointsIndex].distance == 0 )
-    //         {
-    //             //距离为0视为无效点
-    //             pointsIndex++;
-    //             continue;
-    //         }
-    //         if (lastImuIndex != imuIndex)
-    //         {
-    //             //如果index相同则不再重复计算
-    //             quaternion0 = imuDataBuffer[lastImuIndex].quaternion.quaternion_0;
-    //             quaternion1 = imuDataBuffer[lastImuIndex].quaternion.quaternion_1;
-    //             quaternion2 = imuDataBuffer[lastImuIndex].quaternion.quaternion_2;
-    //             quaternion3 = imuDataBuffer[lastImuIndex].quaternion.quaternion_3;
-    //             quaternion = Eigen::Quaterniond{quaternion0, quaternion1, quaternion2, quaternion3};
-    //             //使用自定义精度
-    //             if (enableCustomAccuracy)
-    //             {
-    //                 // RCLCPP_INFO(rclcpp::get_logger("main"), "%ld", imuDataBuffer[imuIndex].timestamp - imuDataBuffer[lastImuIndex].timestamp);
-    //                 long long imuDataTimeInterval = imuDataBuffer[imuIndex].timestamp - imuDataBuffer[lastImuIndex].timestamp;
-    //                 fusionAccuracy = std::min(imuDataTimeInterval,  15000000ll);
-    //             }
-    //             else
-    //             {
-    //                 fusionAccuracy = DEFAULT_FUSION_ACCURACY;
-    //             }
-    //             lastImuIndex = imuIndex;
-    //         }
-    //         // RCLCPP_INFO(rclcpp::get_logger("main"), "%ld", fusionAccuracy);
-    //         double angle_rad =  pointsBuffer[pointsIndex].angle  * ang2radCoe  + M_PI_2;
-    //         // 构建局部坐标向量
-    //         Eigen::Vector3d local_vector( pointsBuffer[pointsIndex].distance * std::sin(angle_rad), pointsBuffer[pointsIndex].distance * std::cos(angle_rad), 0);
-    //         Eigen::Vector3d worldVector = quaternion * local_vector;
-    //         PointCloudVertex tempPoint =
-    //         {
-    //             static_cast<float>(worldVector.x()), static_cast<float>(worldVector.y()), static_cast<float>(worldVector.z()),
-    //             red, green, blue
-    //         };
-    //         data.push_back(tempPoint);
-
-    //         // RCLCPP_INFO(rclcpp::get_logger("main"), "%lf, %lf, %lf", imuDataBuffer[imuIndex].angular.roll, imuDataBuffer[imuIndex].angular.pitch,
-    //         //             imuDataBuffer[imuIndex].angular.yaw);
-    //         // RCLCPP_INFO(rclcpp::get_logger("main"), "%lld, %lld", imuDataBuffer[imuIndex].timestamp, pointsBuffer[pointsIndex].timestamp);
-    //         count++;
-    //         pointsIndex++;
-    //     }
-    //     else
-    //     {
-    //         pointsIndex++;
-    //     }
-    // }
-    // RCLCPP_INFO(rclcpp::get_logger("main"), "%ld", count);
-    // batches.push_back(BatchFrame{count, pointsBuffer[0].timestamp, firstDataIndex});
-
-    // pointsBuffer.erase(pointsBuffer.begin(), pointsBuffer.begin() +  pointsIndex);
-    // imuDataBuffer.erase(imuDataBuffer.begin(), imuDataBuffer.begin() + imuIndex);
 }
 
 bool PointCloudDataManager::fusePositionData()
 {
-    // 融合imu和encoder数据
-
-    // qDebug() << imuDataBuffer.size() << " " << encoderDataBuffer.size();
-    if (encoderDataBuffer.size() > 1000)
+    // 融合carIMU和encoder数据
+    // qDebug() << carImuDataBuffer.size() << " " << encoderDataBuffer.size();
+    qDebug() << encoderDataBuffer[encoderDataBuffer.size() - 1].encoder1 << " " << encoderDataBuffer[encoderDataBuffer.size() - 1].encoder2 << " " <<
+             encoderDataBuffer[encoderDataBuffer.size() - 1].encoder3 << " " << encoderDataBuffer[encoderDataBuffer.size() - 1].encoder4;
+    if (encoderDataBuffer.size() == 0 || carImuDataBuffer.size() == 0)
     {
-        encoderDataBuffer.clear();
+        if (encoderDataBuffer.size() > ENCODER_DATA_AUTO_CLEAN_SIZE)
+        {
+            encoderDataBuffer.clear();
+        }
+        if (carImuDataBuffer.size() > CAR_IMU_DATA_AUTO_CLEAN_SIZE)
+        {
+            carImuDataBuffer.clear();
+        }
+        return false;
     }
-    return false;
+
+
+    return true;
 }
 
 bool PointCloudDataManager::fuseLidarData()
@@ -266,12 +166,6 @@ bool PointCloudDataManager::fuseLidarData()
     size_t firstDataIndex = data.size() - 1;
     // 由于imu数据密度较低，此处作为缓存优化性能
     size_t lastImuIndex = 0;
-    // double quaternion0 = lidarImuDataBuffer[lastImuIndex].quaternion.quaternion_0;
-    // double quaternion1 = lidarImuDataBuffer[lastImuIndex].quaternion.quaternion_1;
-    // double quaternion2 = lidarImuDataBuffer[lastImuIndex].quaternion.quaternion_2;
-    // double quaternion3 = lidarImuDataBuffer[lastImuIndex].quaternion.quaternion_3;
-    // Eigen::Quaterniond quaternion = Eigen::Quaterniond{quaternion0, quaternion1, quaternion2, quaternion3};
-    // quaternion.normalize();
     Eigen::Matrix3d Rx = Eigen::AngleAxisd(-lidarImuDataBuffer[imuIndex].angular.pitch * ang2radCoe, Eigen::Vector3d::UnitX()).matrix();
     Eigen::Matrix3d Ry = Eigen::AngleAxisd(lidarImuDataBuffer[imuIndex].angular.yaw * ang2radCoe, Eigen::Vector3d::UnitY()).matrix();
     Eigen::Matrix3d Rz = Eigen::AngleAxisd(-lidarImuDataBuffer[imuIndex].angular.roll * ang2radCoe, Eigen::Vector3d::UnitZ()).matrix();
@@ -338,9 +232,10 @@ bool PointCloudDataManager::fuseLidarData()
             green = RGBNormalized((1 - normalized_distance) * 51 + normalized_distance * 126);
             blue = RGBNormalized((1 - normalized_distance) * 0 + normalized_distance * 214);
             PointCloudVertex tempPoint =
-                {
-                    static_cast<float>(-worldVector.x()), static_cast<float>(worldVector.z()), static_cast<float>(worldVector.y()),
-                    red, green, blue};
+            {
+                static_cast<float>(-worldVector.x()), static_cast<float>(worldVector.z()), static_cast<float>(worldVector.y()),
+                red, green, blue
+            };
             data.push_back(tempPoint);
 
             count++;

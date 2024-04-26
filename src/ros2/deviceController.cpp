@@ -40,14 +40,27 @@ DeviceController::DeviceController()
 
     std::thread([this]()
     {
-        RCLCPP_INFO_STREAM(rclcpp::get_logger("DeviceController"),  "惯导模块节点线程[启动]");
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("DeviceController"),  "Lidar IMU 模块节点线程[启动]");
         auto imuNode = std::make_shared<LidarImuNode>();
         imuNode->setCallback([this](const message::msg::ImuData::SharedPtr msg) -> void
         {
             this->lidarImuDataCallback(msg);
         });
         imuNode->run();
-        RCLCPP_INFO_STREAM(rclcpp::get_logger("DeviceController"),  "惯导模块节点线程[退出]");
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("DeviceController"),  "Lidar IMU 模块节点线程[退出]");
+    })
+    .detach();
+
+    std::thread([this]()
+    {
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("DeviceController"),  "Car IMU 模块节点线程[启动]");
+        auto imuNode = std::make_shared<CarImuNode>();
+        imuNode->setCallback([this](const message::msg::ImuData::SharedPtr msg) -> void
+        {
+            this->carImuDataCallback(msg);
+        });
+        imuNode->run();
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("DeviceController"),  "Car IMU 模块节点线程[退出]");
     })
     .detach();
 }
@@ -68,7 +81,7 @@ void DeviceController::servoDataCallback(const message::msg::CarServoData::Share
 {
     // qDebug() << msg->angle1 << " " << msg->angle2;
     // todo 完成激光雷达扫描
-    emit sendServoDataSignal(msg);
+    // emit sendServoDataSignal(msg);
 }
 
 void DeviceController::voltageDataCallback(const message::msg::CarVotageData::SharedPtr msg)
@@ -89,6 +102,11 @@ void DeviceController::lidarImuDataCallback(const message::msg::ImuData::SharedP
 void DeviceController::encoderDataCallback(const message::msg::CarEncoderData::SharedPtr msg)
 {
     emit sendEncoderDataSignal(msg);
+}
+
+void DeviceController::carImuDataCallback(const message::msg::ImuData::SharedPtr msg)
+{
+    emit sendCarImuDataSignal(msg);
 }
 
 void DeviceController::sendControlSlot(int state, int speed)

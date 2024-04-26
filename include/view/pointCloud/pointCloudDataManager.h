@@ -23,6 +23,10 @@
 #define LIDAR_DATA_AUTO_CLEAN_SIZE 100000
 //lidarImu数据溢出自动清理大小
 #define LIDAR_IMU_DATA_AUTO_CLEAN_SIZE 5000
+//编码器数据溢出移动清理大小
+#define ENCODER_DATA_AUTO_CLEAN_SIZE 1000
+//carImu数据溢出自动清理大小
+#define CAR_IMU_DATA_AUTO_CLEAN_SIZE 5000
 
 struct Position
 {
@@ -67,10 +71,12 @@ public:
     bool addPoint(message::msg::LidarData::SharedPtr &_newData);
     //接收舵机原始数据
     bool addServoData(message::msg::CarServoData::SharedPtr &_newData);
-    //接收imu原始数据
+    //接收lidar imu原始数据
     bool addLidarImuData(message::msg::ImuData::SharedPtr &_newData);
     //接收编码器原始数据
     bool addEncoderData(message::msg::CarEncoderData::SharedPtr &_newData);
+    //接收car imu原始数据
+    bool addCarImuData(message::msg::ImuData::SharedPtr &_newData);
     //清空
     void clearData();
 
@@ -93,14 +99,17 @@ private:
     unsigned long maxServoDataBufferSize = DEFAULT_MAX_SERVO_DATA_BUFFER_SIZE;
     unsigned long maxLidarImuDataBufferSize = DEFAULT_MAX_IMU_DATA_BUFFER_SIZE;
     unsigned long maxEncoderDataBufferSize = DEFAULT_MAX_ENCODER_DATA_BUFFER_SIZE;
+    unsigned long maxCarImuDataBufferSize = DEFAULT_MAX_IMU_DATA_BUFFER_SIZE;
     //点云原始数据缓冲区
     std::vector<message::msg::LidarDataFrame> pointsBuffer;
     //舵机原始数据缓冲区
     std::vector<message::msg::CarServoData> servoDataBuffer;
-    //imu原始数据缓冲区
+    //lidar imu原始数据缓冲区
     std::vector<message::msg::ImuDataFrame> lidarImuDataBuffer;
     //编码器原始数据缓冲区
     std::vector<message::msg::CarEncoderData> encoderDataBuffer;
+    //car imu原始数据缓冲区
+    std::vector<message::msg::ImuDataFrame> carImuDataBuffer;
 
     //最大Cache大小
     unsigned long maxCacheSize = DEFAULT_MAX_CACHE_SIZE;

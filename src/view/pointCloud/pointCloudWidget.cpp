@@ -301,3 +301,8 @@ void PointCloudWidget::recvEncoderDataSlot(message::msg::CarEncoderData::SharedP
     pointCloudDataManager.addEncoderData(msg);
 }
 
+void PointCloudWidget::recvCarImuDataSlot(message::msg::ImuData::SharedPtr msg)
+{
+    pointCloudDataManager.addCarImuData(msg);
+}
+
