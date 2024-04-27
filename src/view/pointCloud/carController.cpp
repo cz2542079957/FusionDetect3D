@@ -11,6 +11,11 @@ CarController::~CarController()
 
 }
 
+int CarController::getMode()
+{
+    return mode;
+}
+
 void CarController::setMode(int _mode)
 {
     mode = _mode;

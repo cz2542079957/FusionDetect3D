@@ -160,3 +160,31 @@ void MainWindow::sendVoltageDataSlot(const message::msg::CarVotageData::SharedPt
         ui->voltageBar->setStyleSheet("QProgressBar{background:white; text-align:center;} QProgressBar::chunk{background:#ff3300}");
     }
 }
+
+void MainWindow::on_minRenderDistanceController_valueChanged(int value)
+{
+    ui->minRenderDistanceValue->setText(QString::number(value / 100.0f, 'f', 2));
+    ui->pointCloudWidget->setMinRenderDistanceSlot(value / 100.0f);
+}
+
+
+void MainWindow::on_maxRenderDistanceController_valueChanged(int value)
+{
+    ui->maxRenderDistanceValue->setText(QString::number(value));
+    ui->pointCloudWidget->setMaxRenderDistanceSlot(value);
+}
+
+
+void MainWindow::on_pointSizeController_valueChanged(int value)
+{
+    ui->pointSizeValue->setText(QString::number(value / 10.0f, 'f', 2));
+    ui->pointCloudWidget->setPointSizeSlot(value / 10.0f);
+}
+
+
+void MainWindow::on_positionPointSizeController_valueChanged(int value)
+{
+    ui->positionPointSizeValue->setText(QString::number(value / 10.0f, 'f', 2));
+    ui->pointCloudWidget->setPositionPointSizeSlot(value / 10.0f);
+}
+

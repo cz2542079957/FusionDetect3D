@@ -1,7 +1,10 @@
 #include "pointCloudDataManager.h"
+#include "pointCloudWidget.h"
 
-PointCloudDataManager::PointCloudDataManager(int _maxCacheSize)
+PointCloudDataManager::PointCloudDataManager(PointCloudWidget *parent, int _maxCacheSize)
 {
+    this->parent = parent;
+
     pointsBuffer.reserve(maxPointsBufferSize);
     servoDataBuffer.reserve(maxServoDataBufferSize);
     lidarImuDataBuffer.reserve(maxLidarImuDataBufferSize);
@@ -17,7 +20,7 @@ PointCloudDataManager::PointCloudDataManager(int _maxCacheSize)
     data.reserve(_maxCacheSize);
 
     // 定时任务
-    connect(&this->timer, SIGNAL(timeout()), this, SLOT(scheduledTask()));
+    connect(&this->timer, &QTimer::timeout, this, &PointCloudDataManager::scheduledTask);
     timer.start(std::chrono::milliseconds(tsakTimeInterval));
 }
 
@@ -112,7 +115,23 @@ void PointCloudDataManager::scheduledTask()
 
 bool PointCloudDataManager::fuseData()
 {
+    int currentMode = parent->car.getMode();
+    static int lastMode = -1;
     bool updateFlag = false;
+    if (currentMode != 1 && lastMode != currentMode)
+    {
+        batches.clear();
+        handledBatchIndex = -1;
+        pointsBuffer.clear();
+        servoDataBuffer.clear();
+        lidarImuDataBuffer.clear();
+        encoderDataBuffer.clear();
+        carImuDataBuffer.clear();
+        lastMode = currentMode;
+        return updateFlag;
+    }
+    qDebug() << lastMode << " " <<    lastMode  ;
+    lastMode = currentMode;
     updateFlag |= fusePositionData();
     updateFlag |= fuseLidarData();
     return updateFlag;
@@ -122,8 +141,8 @@ bool PointCloudDataManager::fusePositionData()
 {
     // 融合carIMU和encoder数据
     // qDebug() << carImuDataBuffer.size() << " " << encoderDataBuffer.size();
-    qDebug() << encoderDataBuffer[encoderDataBuffer.size() - 1].encoder1 << " " << encoderDataBuffer[encoderDataBuffer.size() - 1].encoder2 << " " <<
-             encoderDataBuffer[encoderDataBuffer.size() - 1].encoder3 << " " << encoderDataBuffer[encoderDataBuffer.size() - 1].encoder4;
+    // qDebug() << encoderDataBuffer[encoderDataBuffer.size() - 1].encoder1 << " " << encoderDataBuffer[encoderDataBuffer.size() - 1].encoder2 << " " <<
+    //          encoderDataBuffer[encoderDataBuffer.size() - 1].encoder3 << " " << encoderDataBuffer[encoderDataBuffer.size() - 1].encoder4;
     if (encoderDataBuffer.size() == 0 || carImuDataBuffer.size() == 0)
     {
         if (encoderDataBuffer.size() > ENCODER_DATA_AUTO_CLEAN_SIZE)
@@ -137,6 +156,9 @@ bool PointCloudDataManager::fusePositionData()
         return false;
     }
 
+    // 先匹配上正确时间戳
+
+    // 编码器数据中如果有正负不同的情况，说明是转向动作
 
     return true;
 }

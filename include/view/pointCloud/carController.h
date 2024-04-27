@@ -29,6 +29,7 @@ public:
     CarController();
     ~CarController();
 
+    int getMode();
     void setMode(int _mode);
 
     void keypressActionHandler(QKeyEvent *event);

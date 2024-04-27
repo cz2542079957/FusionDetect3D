@@ -57,5 +57,9 @@ private slots:
     void on_carSpeedController_valueChanged(int value);
 
     void sendVoltageDataSlot(const message::msg::CarVotageData::SharedPtr msg);
+    void on_minRenderDistanceController_valueChanged(int value);
+    void on_maxRenderDistanceController_valueChanged(int value);
+    void on_pointSizeController_valueChanged(int value);
+    void on_positionPointSizeController_valueChanged(int value);
 };
 #endif // MAINWINDOW_H

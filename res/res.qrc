@@ -6,5 +6,7 @@
         <file>shader/mesh_430.vert</file>
         <file>shader/point_430.frag</file>
         <file>shader/point_430.vert</file>
+        <file>shader/position_430.frag</file>
+        <file>shader/position_430.vert</file>
     </qresource>
 </RCC>

@@ -56,6 +56,8 @@ struct BatchFrame
     unsigned long firstDataIndex = 0;
 };
 
+class PointCloudWidget;
+
 /*
    作为PointCloudWidget的工具类，管理点云数据
 
@@ -65,7 +67,7 @@ class PointCloudDataManager: public QObject
 {
     Q_OBJECT
 public:
-    PointCloudDataManager(int _maxSize = DEFAULT_MAX_CACHE_SIZE);
+    PointCloudDataManager(PointCloudWidget *parent = nullptr,  int _maxSize = DEFAULT_MAX_CACHE_SIZE);
 
     //接收点云原始数据
     bool addPoint(message::msg::LidarData::SharedPtr &_newData);
@@ -91,6 +93,8 @@ public:
     unsigned long getPointNeedDrawNumber();
 
 private:
+    PointCloudWidget *parent = nullptr;
+
     QTimer timer;
     //定时处理周期
     int tsakTimeInterval = 100;

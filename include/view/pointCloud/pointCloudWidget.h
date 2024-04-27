@@ -17,7 +17,7 @@ public:
     explicit PointCloudWidget(QWidget *parent = nullptr);
     ~PointCloudWidget();
     // 点云数据管理器
-    PointCloudDataManager pointCloudDataManager;
+    PointCloudDataManager pointCloudDataManager = PointCloudDataManager(this);
     //相机控制器
     CameraController camera;
     //小车控制器
@@ -29,8 +29,8 @@ private :
     //变换矩阵(模型、视野、投影)
     QMatrix4x4 model, view, projection;
     //渲染距离
-    float renderMinDistance =  0.05f;
-    float renderMaxDistance = 100.0f;
+    float minRenderDistance =  0.05f;
+    float maxRenderDistance = 100.0f;
 
     QTimer timer;
 
@@ -75,6 +75,15 @@ private :
     //点大小
     float pointSize = 2;
 
+
+    //位置点
+    bool enablePositionPoints = true;
+    unsigned positionVAO, positionVBO;
+    QOpenGLShaderProgram shaderProgramPosition;
+    //点大小
+    float positionPointSize = 3;
+
+
     //是否允许小车控制
     bool enableCarControl = false;
     //按键监听
@@ -106,10 +115,21 @@ public slots:
     void showAxisSlot(bool val);
     //显示网格
     void showMeshSlot(bool val);
+    //显示位置点
+    void showPositionPointSlot(bool val);
     //绘制地平线网格
     void drawMeshSlot(int rowBegin, int  rows, int  columnBegin, int  columns);
     //清空点云
     void clearPointCloudSlot();
+
+    //设置最小渲染距离
+    void setMinRenderDistanceSlot(float val);
+    //设置最大渲染距离
+    void setMaxRenderDistanceSlot(float val);
+    //设置点云大小
+    void setPointSizeSlot(float val);
+    //设置位置点大小
+    void setPositionPointSizeSlot(float val);
 
     //拿到点云数据
     void recvPointsDataSlot(message::msg::LidarData::SharedPtr msg);

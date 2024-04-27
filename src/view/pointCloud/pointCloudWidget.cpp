@@ -13,12 +13,14 @@ PointCloudWidget::~PointCloudWidget()
         return;
     }
     makeCurrent();
-    glDeleteBuffers(1, &axisVAO);
-    glDeleteVertexArrays(1, &axisVBO);
-    glDeleteBuffers(1, &meshVAO);
-    glDeleteVertexArrays(1, &meshVBO);
-    glDeleteBuffers(1, &pointsVAO);
-    glDeleteVertexArrays(1, &pointsVBO);
+    glDeleteBuffers(1, &axisVBO);
+    glDeleteVertexArrays(1, &axisVAO);
+    glDeleteBuffers(1, &meshVBO);
+    glDeleteVertexArrays(1, &meshVAO);
+    glDeleteBuffers(1, &pointsVBO);
+    glDeleteVertexArrays(1, &pointsVAO);
+    glDeleteBuffers(1, &positionVBO);
+    glDeleteVertexArrays(1, &positionVAO);
     doneCurrent();
 }
 
@@ -105,6 +107,12 @@ void PointCloudWidget::initializeGL()
     {
         qDebug() << "ERR:" << shaderProgramPoints.log();
     }
+    shaderProgramPosition.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shader/position_430.vert");
+    shaderProgramPosition.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shader/position_430.frag");
+    if (!success)
+    {
+        qDebug() << "ERR:" << shaderProgramPosition.log();
+    }
 
     //---坐标轴数据---
     glGenVertexArrays(1, &axisVAO);
@@ -142,9 +150,23 @@ void PointCloudWidget::initializeGL()
     GLint pos3 = shaderProgramPoints.attributeLocation("aPos");
     glVertexAttribPointer(pos3, 3, GL_FLOAT, GL_FALSE, sizeof(PointCloudVertex),  (void *)0);
     glEnableVertexAttribArray(pos3);
-    GLint gPointColor = shaderProgramPoints.attributeLocation("aColor");
-    glVertexAttribPointer(gPointColor, 3, GL_FLOAT, GL_FALSE, sizeof(PointCloudVertex),   (void *)offsetof(PointCloudVertex, red));
-    glEnableVertexAttribArray(gPointColor);
+    GLint gPointColor1 = shaderProgramPoints.attributeLocation("aColor");
+    glVertexAttribPointer(gPointColor1, 3, GL_FLOAT, GL_FALSE, sizeof(PointCloudVertex),   (void *)offsetof(PointCloudVertex, red));
+    glEnableVertexAttribArray(gPointColor1);
+
+    //---位置点---
+    glGenVertexArrays(1, &positionVAO);
+    glGenBuffers(1, &positionVBO);
+    glBindVertexArray(positionVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, positionVBO);
+    glBufferData(GL_ARRAY_BUFFER,  pointCloudDataManager.getMaxCacheSize() * sizeof(PointCloudVertex), nullptr,  GL_DYNAMIC_DRAW);
+    shaderProgramPosition.bind();
+    GLint pos4 = shaderProgramPosition.attributeLocation("aPos");
+    glVertexAttribPointer(pos4, 3, GL_FLOAT, GL_FALSE, sizeof(PointCloudVertex),  (void *)0);
+    glEnableVertexAttribArray(pos4);
+    GLint gPointColor2 = shaderProgramPoints.attributeLocation("aColor");
+    glVertexAttribPointer(gPointColor2, 3, GL_FLOAT, GL_FALSE, sizeof(PointCloudVertex),   (void *)offsetof(PointCloudVertex, red));
+    glEnableVertexAttribArray(gPointColor2);
 
     //释放
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -166,7 +188,7 @@ void PointCloudWidget::paintGL()
     view.setToIdentity();
     view.lookAt(camera.getBasePos(), camera.getBasePos() + camera.getBaseVector(), camera.getCameraUp());
     projection.setToIdentity();
-    projection.perspective(camera.getFov(), (float)width() / height(), renderMinDistance, renderMaxDistance);
+    projection.perspective(camera.getFov(), (float)width() / height(), minRenderDistance, maxRenderDistance);
 
     //渲染坐标轴
     if (enableAxis)
@@ -223,13 +245,13 @@ void PointCloudWidget::focusOutEvent(QFocusEvent *event)
     car.clearKeys();
 }
 
-
 void PointCloudWidget::onTimeout()
 {
     makeCurrent();
     doneCurrent();
     update();
 }
+
 
 void PointCloudWidget::resetViewSlot()
 {
@@ -245,6 +267,12 @@ void PointCloudWidget::showAxisSlot(bool val)
 void PointCloudWidget::showMeshSlot(bool val)
 {
     enableMesh = val;
+    update();
+}
+
+void PointCloudWidget::showPositionPointSlot(bool val)
+{
+    enablePositionPoints = val;
     update();
 }
 
@@ -280,6 +308,31 @@ void PointCloudWidget::clearPointCloudSlot()
     pointCloudDataManager.clearData();
     update();
 }
+
+void PointCloudWidget::setMinRenderDistanceSlot(float val)
+{
+    minRenderDistance = val;
+    update();
+}
+
+void PointCloudWidget::setMaxRenderDistanceSlot(float val)
+{
+    maxRenderDistance = val;
+    update();
+}
+
+void PointCloudWidget::setPointSizeSlot(float val)
+{
+    pointSize = val;
+    update();
+}
+
+void PointCloudWidget::setPositionPointSizeSlot(float val)
+{
+    positionPointSize = val;
+    update();
+}
+
 
 void PointCloudWidget::recvPointsDataSlot(message::msg::LidarData::SharedPtr msg)
 {
