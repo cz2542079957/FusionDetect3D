@@ -85,8 +85,16 @@ public:
     //最大缓存
     unsigned long getMaxCacheSize() const;
     void setMaxCacheSize(unsigned long _newMaxCacheSize);
+    // 位置点数据
+    const std::vector<PointCloudVertex> &getPositionData() const;
     //数据
     const std::vector<PointCloudVertex> &getData() const;
+
+    //获取当前数据大小
+    unsigned long getCurrentPositionCacheSize() const;
+    //获取有多少点需要绘制(优化机制)
+    unsigned long getPositionNeedDrawNumber();
+
     //获取当前数据大小
     unsigned long getCurrentCacheSize() const;
     //获取有多少点需要绘制(优化机制)
@@ -119,7 +127,10 @@ private:
     unsigned long maxCacheSize = DEFAULT_MAX_CACHE_SIZE;
     //方位参数
     std::vector<Position> positions;
-    //当前数据
+    //当前方位数据（用于图像渲染）
+    std::vector<PointCloudVertex> positionsData;
+    size_t handledPositionsData = 0;
+    //当前数据（用于图像渲染）
     std::vector<PointCloudVertex> data;
     //每一批数据的大小(单位：PointCloudVertex)
     std::vector<BatchFrame>  batches;
@@ -136,6 +147,7 @@ private:
     //是否启用自适应精度
     bool enableAutoAccuracy = true;
     //数据融合精度，值越小越高，超过误差的点会放弃 (默认5ms误差)
+    long long positionFusionAccuracy = DEFAULT_FUSION_ACCURACY;
     long long fusionAccuracy = DEFAULT_FUSION_ACCURACY;
 
     //处理点的颜色（进行颜色层次划分）

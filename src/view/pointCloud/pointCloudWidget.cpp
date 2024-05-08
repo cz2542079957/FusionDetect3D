@@ -233,6 +233,19 @@ void PointCloudWidget::paintGL()
         glDrawArrays(GL_POINTS, 0, pointCloudDataManager.getCurrentCacheSize());
     }
 
+    if (enablePositionPoints)
+    {
+        glBindVertexArray(positionVAO);
+        glBindBuffer(GL_ARRAY_BUFFER, positionVBO);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, pointCloudDataManager.getPositionNeedDrawNumber() * sizeof(PointCloudVertex), &pointCloudDataManager.getPositionData()[0]);
+        shaderProgramPosition.bind();
+        shaderProgramPoints.setUniformValue("model", model);
+        shaderProgramPoints.setUniformValue("view", view);
+        shaderProgramPoints.setUniformValue("projection", projection);
+        glPointSize(positionPointSize);
+        glDrawArrays(GL_POINTS, 0, pointCloudDataManager.getCurrentPositionCacheSize());
+    }
+
     //同步更新信息
     emit infoTreeUpdateSignal(camera);
 }

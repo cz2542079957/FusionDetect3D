@@ -68,6 +68,11 @@ void PointCloudDataManager::setMaxCacheSize(unsigned long _newMaxCacheSize)
     data.reserve(maxCacheSize);
 }
 
+const std::vector<PointCloudVertex> &PointCloudDataManager::getPositionData() const
+{
+    return this->positionsData;
+}
+
 const std::vector<PointCloudVertex> &PointCloudDataManager::getData() const
 {
     return this->data;
@@ -85,6 +90,16 @@ void PointCloudDataManager::clearData()
     carImuDataBuffer.clear();
 }
 
+unsigned long PointCloudDataManager::getCurrentPositionCacheSize() const
+{
+    return positionsData.size();
+}
+
+unsigned long PointCloudDataManager::getPositionNeedDrawNumber()
+{
+    return positionsData.size();
+}
+
 unsigned long PointCloudDataManager::getCurrentCacheSize() const
 {
     return data.size();
@@ -100,13 +115,14 @@ unsigned long PointCloudDataManager::getPointNeedDrawNumber()
     return length;
 }
 
+
 void PointCloudDataManager::scheduledTask()
 {
     bool updateFlag = false;
     // 数据融合
     updateFlag |= fuseData();
     // 颜色渲染
-    //  updateFlag |= handlePointsColor();
+    updateFlag |= handlePointsColor();
     if (updateFlag)
     {
         emit updateGraph();
@@ -130,7 +146,7 @@ bool PointCloudDataManager::fuseData()
         lastMode = currentMode;
         return updateFlag;
     }
-    qDebug() << lastMode << " " <<    lastMode  ;
+    // qDebug() << lastMode << " " <<    lastMode  ;
     lastMode = currentMode;
     updateFlag |= fusePositionData();
     updateFlag |= fuseLidarData();
@@ -141,8 +157,6 @@ bool PointCloudDataManager::fusePositionData()
 {
     // 融合carIMU和encoder数据
     // qDebug() << carImuDataBuffer.size() << " " << encoderDataBuffer.size();
-    // qDebug() << encoderDataBuffer[encoderDataBuffer.size() - 1].encoder1 << " " << encoderDataBuffer[encoderDataBuffer.size() - 1].encoder2 << " " <<
-    //          encoderDataBuffer[encoderDataBuffer.size() - 1].encoder3 << " " << encoderDataBuffer[encoderDataBuffer.size() - 1].encoder4;
     if (encoderDataBuffer.size() == 0 || carImuDataBuffer.size() == 0)
     {
         if (encoderDataBuffer.size() > ENCODER_DATA_AUTO_CLEAN_SIZE)
@@ -156,9 +170,67 @@ bool PointCloudDataManager::fusePositionData()
         return false;
     }
 
-    // 先匹配上正确时间戳
+    // 以编码器数据为主
+    float ang2radCoe = M_PI / 180.0f;
+    size_t encoderIndex = 0, carImuIndex = 0;
+    // float red = RGBNormalized(redOld), green = RGBNormalized(greenOld), blue = RGBNormalized(blueOld);
+    while (encoderIndex < encoderDataBuffer.size() &&  carImuIndex < carImuDataBuffer.size())
+    {
+        if (encoderIndex > 0)
+        {
+            positionFusionAccuracy = encoderDataBuffer[encoderIndex].timestamp - encoderDataBuffer[encoderIndex - 1].timestamp;
+        }
 
-    // 编码器数据中如果有正负不同的情况，说明是转向动作
+        if (encoderDataBuffer[encoderIndex].timestamp - carImuDataBuffer[carImuIndex].timestamp > DEFAULT_MIN_FUSION_ACCURACY * 2)
+        {
+            carImuIndex ++;
+        }
+        else if (abs(encoderDataBuffer[encoderIndex].timestamp - carImuDataBuffer[carImuIndex].timestamp) < DEFAULT_MIN_FUSION_ACCURACY * 2)
+        {
+            // 编码器数据中如果有正负不同的情况，说明是转向动作，不计算
+            message::msg::CarEncoderData *encoderData = &encoderDataBuffer[encoderIndex];
+
+            // qDebug() << encoderData->encoder1 << " " << encoderData->encoder2 << " " <<
+            //          encoderData->encoder3 << " " << encoderData->encoder4;
+            if ((encoderData->encoder1 > 0 && encoderData->encoder2 > 0 && encoderData->encoder3 > 0 && encoderData->encoder4 > 0)
+                    || (encoderData->encoder1 < 0 && encoderData->encoder2 < 0 && encoderData->encoder3 < 0 && encoderData->encoder4 < 0))
+            {
+            }
+            else
+            {
+                encoderIndex ++;
+                continue;
+            }
+            // qDebug() << encoderDataBuffer[encoderIndex].encoder1 << " " << encoderDataBuffer[encoderIndex].encoder2;
+            float avgEncoderData = (encoderData->encoder1 + encoderData->encoder2 + encoderData->encoder3 + encoderData->encoder4) / 4.0;
+
+            // qDebug() << carImuDataBuffer[carImuIndex].angular.roll << " " <<  avgEncoderData;
+            float xDelta = std::sin(-carImuDataBuffer[carImuIndex].angular.roll * ang2radCoe) * avgEncoderData / 10000.0;
+            float yDelta = std::cos(-carImuDataBuffer[carImuIndex].angular.roll * ang2radCoe) * avgEncoderData / 10000.0;
+            float x = positions[positions.size() - 1].pos.x() + xDelta;
+            float y = positions[positions.size() - 1].pos.y() + yDelta;
+            Position tempPosition =
+            {
+                {x, y}, {0, 0}
+            };
+            PointCloudVertex tempPoint =
+            {
+                x, y, 0,
+                RGBNormalized(255), RGBNormalized(248), RGBNormalized(91)
+            };
+            positions.push_back(tempPosition);
+            positionsData.push_back(tempPoint);
+            carImuIndex ++;
+            encoderIndex ++;
+        }
+        else
+        {
+            encoderIndex ++;
+        }
+    }
+
+    encoderDataBuffer.erase(encoderDataBuffer.begin(), encoderDataBuffer.begin() + encoderIndex);
+    carImuDataBuffer.erase(carImuDataBuffer.begin(), carImuDataBuffer.begin() + carImuIndex);
 
     return true;
 }
@@ -202,7 +274,7 @@ bool PointCloudDataManager::fuseLidarData()
             Ry = Eigen::AngleAxisd(lidarImuDataBuffer[imuIndex].angular.yaw * ang2radCoe, Eigen::Vector3d::UnitY()).matrix();
             Rz = Eigen::AngleAxisd(-lidarImuDataBuffer[imuIndex].angular.roll * ang2radCoe, Eigen::Vector3d::UnitZ()).matrix();
             R = Rx * Ry * Rz;
-            if (lidarImuDataBuffer[imuIndex].angular_velocity.angular_velocity_y > -10)
+            if (lidarImuDataBuffer[imuIndex].angular_velocity.angular_velocity_y > -5)
             {
                 lastImuIndex = imuIndex;
                 imuIndex++;
@@ -235,9 +307,9 @@ bool PointCloudDataManager::fuseLidarData()
         }
         else if (abs(pointsBuffer[pointsIndex].timestamp - lidarImuDataBuffer[imuIndex].timestamp) < fusionAccuracy)
         {
-            if (pointsBuffer[pointsIndex].distance == 0)
+            if (pointsBuffer[pointsIndex].distance <= 0.3 || pointsBuffer[pointsIndex].distance  > 5.0)
             {
-                // 距离为0视为无效点
+                // 距离小于30cm视为无效点
                 pointsIndex++;
                 continue;
             }
@@ -249,7 +321,7 @@ bool PointCloudDataManager::fuseLidarData()
 
             // RGB(255, 51, 0)
             // RGB(28, 126, 214
-            double normalized_distance = (pointsBuffer[pointsIndex].distance - 0) / 3;
+            double normalized_distance = (pointsBuffer[pointsIndex].distance - 0) / 5;
             red = RGBNormalized((1 - normalized_distance) * 255 + normalized_distance * 28);
             green = RGBNormalized((1 - normalized_distance) * 51 + normalized_distance * 126);
             blue = RGBNormalized((1 - normalized_distance) * 0 + normalized_distance * 214);
@@ -302,23 +374,36 @@ bool PointCloudDataManager::handlePointsColor()
     // RCLCPP_INFO(rclcpp::get_logger("main"), "%lld , %ld",  handledBatchIndex, batches.size());
     // RCLCPP_INFO(rclcpp::get_logger("main"), "%lld, %ld", batches[batches.size() - 1].timestamp,  batches[batches.size() - 1].firstDataIndex);
     // RCLCPP_INFO(rclcpp::get_logger("main"), "%ld",  batches.size());
-    int colors = batches.size() - handledBatchIndex;
-    float redDelta = (redOld - redNew) / colors,
-          greenDelta = (greenOld - greenNew) / colors,
-          blueDelta = (blueOld - blueNew) / colors;
-    // RCLCPP_INFO(rclcpp::get_logger("main"), "%d : %f, %f, %f", colors, redDelta, greenDelta, blueDelta);
-    for (size_t i = handledBatchIndex + 1; i < batches.size(); i++)
-    {
-        int offset = i - handledBatchIndex - 1;
-        float red = RGBNormalized(redOld - redDelta * offset);
-        float green = RGBNormalized(greenOld - greenDelta * offset);
-        float blue = RGBNormalized(blueOld - blueDelta * offset);
-        for (size_t j = batches[i].firstDataIndex; j < batches[i].firstDataIndex + batches[i].size; j++)
-        {
-            data[j].red = red;
-            data[j].green = green;
-            data[j].blue = blue;
-        }
-    }
-    return true;
+    // int colors = batches.size() - handledBatchIndex;
+    // float redDelta = (redOld - redNew) / colors,
+    //       greenDelta = (greenOld - greenNew) / colors,
+    //       blueDelta = (blueOld - blueNew) / colors;
+    // // RCLCPP_INFO(rclcpp::get_logger("main"), "%d : %f, %f, %f", colors, redDelta, greenDelta, blueDelta);
+    // for (size_t i = handledBatchIndex + 1; i < batches.size(); i++)
+    // {
+    //     int offset = i - handledBatchIndex - 1;
+    //     float red = RGBNormalized(redOld - redDelta * offset);
+    //     float green = RGBNormalized(greenOld - greenDelta * offset);
+    //     float blue = RGBNormalized(blueOld - blueDelta * offset);
+    //     for (size_t j = batches[i].firstDataIndex; j < batches[i].firstDataIndex + batches[i].size; j++)
+    //     {
+    //         data[j].red = red;
+    //         data[j].green = green;
+    //         data[j].blue = blue;
+    //     }
+    // }
+    // for (size_t i = handledBatchIndex + 1; i < batches.size(); i++)
+    // {
+    //     for (size_t j = batches[i].firstDataIndex; j < batches[i].firstDataIndex + batches[i].size; j++)
+    //     {
+    //         double normalized_distance = (pointsBuffer[pointsIndex].distance - 0) / 3;
+    //         float red = RGBNormalized((1 - normalized_distance) * 255 + normalized_distance * 28);
+    //         float green = RGBNormalized((1 - normalized_distance) * 51 + normalized_distance * 126);
+    //         float blue = RGBNormalized((1 - normalized_distance) * 0 + normalized_distance * 214);
+    //         data[j].red = red;
+    //         data[j].green = green;
+    //         data[j].blue = blue;
+    //     }
+    // }
+    return false;
 }
