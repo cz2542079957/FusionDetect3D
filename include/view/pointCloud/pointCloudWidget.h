@@ -121,6 +121,10 @@ public slots:
     void drawMeshSlot(int rowBegin, int  rows, int  columnBegin, int  columns);
     //清空点云
     void clearPointCloudSlot();
+    //清除位置点
+    void clearPositionPointSlot();
+    //同步IMU航向角
+    void syncIMURollSlot();
 
     //设置最小渲染距离
     void setMinRenderDistanceSlot(float val);

@@ -28,6 +28,10 @@
 //carImu数据溢出自动清理大小
 #define CAR_IMU_DATA_AUTO_CLEAN_SIZE 5000
 
+
+#define MAX_LIDAR_DISTANCE 6.0
+#define MIN_LIDAR_DISTANCE 0.3
+
 struct Position
 {
     //二维坐标
@@ -79,8 +83,12 @@ public:
     bool addEncoderData(message::msg::CarEncoderData::SharedPtr &_newData);
     //接收car imu原始数据
     bool addCarImuData(message::msg::ImuData::SharedPtr &_newData);
-    //清空
-    void clearData();
+    //清空点云
+    void clearPointCloud();
+    //清空位置点
+    void clearPositionPoint();
+    //同步IMU航向角
+    void syncIMURoll();
 
     //最大缓存
     unsigned long getMaxCacheSize() const;
@@ -125,6 +133,8 @@ private:
 
     //最大Cache大小
     unsigned long maxCacheSize = DEFAULT_MAX_CACHE_SIZE;
+    //lidarIMU与carIMU的同步系数
+    float imuSyncCoe = 0;
     //方位参数
     std::vector<Position> positions;
     //当前方位数据（用于图像渲染）

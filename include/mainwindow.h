@@ -36,14 +36,18 @@ signals:
     void showAxisSignal(bool val);
     void showMeshSignal(bool val);
     void clearPointCloudSignal();
+    void clearPositionPointSignal();
     void fovChangedSignal(int value);
     void baseSpeedSignal(float value);
     void carSpeedSignal(int value);
+    void syncIMURollSignal();
+
 
 private slots:
     void on_showMesh_clicked();
     void on_showAxis_clicked();
     void on_clearPointCloud_clicked();
+    void on_clearPositionPoint_clicked();
     void on_comboBox_currentIndexChanged(int index);
     void on_resetView_clicked();
 
@@ -61,5 +65,6 @@ private slots:
     void on_maxRenderDistanceController_valueChanged(int value);
     void on_pointSizeController_valueChanged(int value);
     void on_positionPointSizeController_valueChanged(int value);
+    void on_syncIMURoll_clicked();
 };
 #endif // MAINWINDOW_H

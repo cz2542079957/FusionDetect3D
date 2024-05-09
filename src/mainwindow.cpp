@@ -24,14 +24,17 @@ MainWindow::~MainWindow()
 bool MainWindow::SignalsSlotsRegister()
 {
     // 工具栏按钮绑定
-    connect(this, SIGNAL(resetViewSignal()), ui->pointCloudWidget, SLOT(resetViewSlot()));
-    connect(this, SIGNAL(showAxisSignal(bool)), ui->pointCloudWidget, SLOT(showAxisSlot(bool)));
-    connect(this, SIGNAL(showMeshSignal(bool)), ui->pointCloudWidget, SLOT(showMeshSlot(bool)));
-    connect(this, SIGNAL(clearPointCloudSignal()), ui->pointCloudWidget, SLOT(clearPointCloudSlot()));
-    connect(&ui->pointCloudWidget->camera, SIGNAL(fovChangedSignal(int)), this, SLOT(fovChangedSlot(int)));
-    connect(this, SIGNAL(fovChangedSignal(int)), &ui->pointCloudWidget->camera, SLOT(fovChangedSlot(int)));
-    connect(this, SIGNAL(baseSpeedSignal(float)), &ui->pointCloudWidget->camera, SLOT(baseSpeedSlot(float)));
-    connect(this, SIGNAL(carSpeedSignal(int)), &ui->pointCloudWidget->car, SLOT(carSpeedSlot(int)));
+    connect(this, &MainWindow::resetViewSignal, ui->pointCloudWidget, &PointCloudWidget::resetViewSlot);
+    connect(this, &MainWindow::showAxisSignal, ui->pointCloudWidget, &PointCloudWidget::showAxisSlot);
+    connect(this, &MainWindow::showMeshSignal, ui->pointCloudWidget, &PointCloudWidget::showMeshSlot);
+    connect(this, &MainWindow::clearPointCloudSignal, ui->pointCloudWidget, &PointCloudWidget::clearPointCloudSlot);
+    connect(this, &MainWindow::clearPositionPointSignal, ui->pointCloudWidget, &PointCloudWidget::clearPositionPointSlot);
+    connect(this, &MainWindow::syncIMURollSignal, ui->pointCloudWidget, &PointCloudWidget::syncIMURollSlot);
+
+    connect(&ui->pointCloudWidget->camera, &CameraController::fovChangedSignal, this, &MainWindow::fovChangedSlot);
+    connect(this, &MainWindow::fovChangedSignal, &ui->pointCloudWidget->camera, &CameraController::fovChangedSlot);
+    connect(this, &MainWindow::baseSpeedSignal, &ui->pointCloudWidget->camera, &CameraController::baseSpeedSlot);
+    connect(this, &MainWindow::carSpeedSignal, &ui->pointCloudWidget->car, &CarController::carSpeedSlot);
 
     // ros节点收发链路
     connect(this->dc, &DeviceController::sendPointsSignal, ui->pointCloudWidget, &PointCloudWidget::recvPointsDataSlot);
@@ -89,6 +92,12 @@ void MainWindow::on_showAxis_clicked()
 void MainWindow::on_clearPointCloud_clicked()
 {
     emit clearPointCloudSignal();
+}
+
+
+void MainWindow::on_clearPositionPoint_clicked()
+{
+    emit clearPositionPointSignal();
 }
 
 void MainWindow::on_fovController_valueChanged(int value)
@@ -186,5 +195,11 @@ void MainWindow::on_positionPointSizeController_valueChanged(int value)
 {
     ui->positionPointSizeValue->setText(QString::number(value / 10.0f, 'f', 2));
     ui->pointCloudWidget->setPositionPointSizeSlot(value / 10.0f);
+}
+
+
+void MainWindow::on_syncIMURoll_clicked()
+{
+    emit syncIMURollSignal();
 }
 

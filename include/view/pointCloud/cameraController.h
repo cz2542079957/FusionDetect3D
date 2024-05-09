@@ -238,7 +238,7 @@ signals:
     //fov数据绑定
     void fovChangedSignal(int value);
 
-private slots:
+public slots:
     //键盘事件处理程序
     void handler();
     //动画处理

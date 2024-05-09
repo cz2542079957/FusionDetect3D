@@ -78,16 +78,30 @@ const std::vector<PointCloudVertex> &PointCloudDataManager::getData() const
     return this->data;
 }
 
-void PointCloudDataManager::clearData()
+void PointCloudDataManager::clearPointCloud()
 {
-    data.clear();
-    batches.clear();
-    handledBatchIndex = -1;
     pointsBuffer.clear();
     servoDataBuffer.clear();
     lidarImuDataBuffer.clear();
+
+    data.clear();
+    batches.clear();
+    handledBatchIndex = -1;
+}
+
+void PointCloudDataManager::clearPositionPoint()
+{
     encoderDataBuffer.clear();
     carImuDataBuffer.clear();
+
+    //不清空positions数据，因为点云计算依赖有效位置数据，
+    positionsData.clear();
+}
+
+void PointCloudDataManager::syncIMURoll()
+{
+    imuSyncCoe = lidarImuDataBuffer[lidarImuDataBuffer.size() - 1].angular.yaw - carImuDataBuffer[carImuDataBuffer.size() - 1].angular.roll;
+    // qDebug() << carImuDataBuffer[carImuDataBuffer.size() - 1].angular.roll << " " << lidarImuDataBuffer[lidarImuDataBuffer.size() - 1].angular.yaw;
 }
 
 unsigned long PointCloudDataManager::getCurrentPositionCacheSize() const
@@ -114,7 +128,6 @@ unsigned long PointCloudDataManager::getPointNeedDrawNumber()
     }
     return length;
 }
-
 
 void PointCloudDataManager::scheduledTask()
 {
@@ -181,34 +194,36 @@ bool PointCloudDataManager::fusePositionData()
             positionFusionAccuracy = encoderDataBuffer[encoderIndex].timestamp - encoderDataBuffer[encoderIndex - 1].timestamp;
         }
 
-        if (encoderDataBuffer[encoderIndex].timestamp - carImuDataBuffer[carImuIndex].timestamp > DEFAULT_MIN_FUSION_ACCURACY * 2)
+        // 编码器数据中如果有正负不同的情况，说明是转向动作，不计算
+        message::msg::CarEncoderData *encoderData = &encoderDataBuffer[encoderIndex];
+        if (!((encoderData->encoder1 > 0 && encoderData->encoder2 > 0 && encoderData->encoder3 > 0 && encoderData->encoder4 > 0)
+                || (encoderData->encoder1 < 0 && encoderData->encoder2 < 0 && encoderData->encoder3 < 0 && encoderData->encoder4 < 0)))
+        {
+            // qDebug() << encoderData->encoder1 << " " << encoderData->encoder2 << " " <<
+            //          encoderData->encoder3 << " " << encoderData->encoder4;
+            encoderIndex ++;
+            continue;
+        }
+
+        if (encoderData->timestamp - carImuDataBuffer[carImuIndex].timestamp > DEFAULT_MIN_FUSION_ACCURACY * 2)
         {
             carImuIndex ++;
         }
-        else if (abs(encoderDataBuffer[encoderIndex].timestamp - carImuDataBuffer[carImuIndex].timestamp) < DEFAULT_MIN_FUSION_ACCURACY * 2)
+        else if (carImuDataBuffer[carImuIndex].timestamp - encoderData->timestamp  > DEFAULT_MIN_FUSION_ACCURACY * 2)
         {
-            // 编码器数据中如果有正负不同的情况，说明是转向动作，不计算
-            message::msg::CarEncoderData *encoderData = &encoderDataBuffer[encoderIndex];
-
-            // qDebug() << encoderData->encoder1 << " " << encoderData->encoder2 << " " <<
-            //          encoderData->encoder3 << " " << encoderData->encoder4;
-            if ((encoderData->encoder1 > 0 && encoderData->encoder2 > 0 && encoderData->encoder3 > 0 && encoderData->encoder4 > 0)
-                    || (encoderData->encoder1 < 0 && encoderData->encoder2 < 0 && encoderData->encoder3 < 0 && encoderData->encoder4 < 0))
-            {
-            }
-            else
-            {
-                encoderIndex ++;
-                continue;
-            }
+            encoderIndex ++;
+        }
+        else
+        {
             // qDebug() << encoderDataBuffer[encoderIndex].encoder1 << " " << encoderDataBuffer[encoderIndex].encoder2;
             float avgEncoderData = (encoderData->encoder1 + encoderData->encoder2 + encoderData->encoder3 + encoderData->encoder4) / 4.0;
 
             // qDebug() << carImuDataBuffer[carImuIndex].angular.roll << " " <<  avgEncoderData;
-            float xDelta = std::sin(-carImuDataBuffer[carImuIndex].angular.roll * ang2radCoe) * avgEncoderData / 10000.0;
-            float yDelta = std::cos(-carImuDataBuffer[carImuIndex].angular.roll * ang2radCoe) * avgEncoderData / 10000.0;
-            float x = positions[positions.size() - 1].pos.x() + xDelta;
-            float y = positions[positions.size() - 1].pos.y() + yDelta;
+            carImuDataBuffer[carImuIndex].angular.roll += imuSyncCoe - 0;
+            float xDelta = std::sin(-carImuDataBuffer[carImuIndex].angular.roll * ang2radCoe) * avgEncoderData / 19050.17;
+            float yDelta = std::cos(-carImuDataBuffer[carImuIndex].angular.roll * ang2radCoe) * avgEncoderData / 19050.17;
+            float x = positions[positions.size() - 1].pos.x() - xDelta;
+            float y = positions[positions.size() - 1].pos.y() - yDelta;
             Position tempPosition =
             {
                 {x, y}, {0, 0}
@@ -218,13 +233,10 @@ bool PointCloudDataManager::fusePositionData()
                 x, y, 0,
                 RGBNormalized(255), RGBNormalized(248), RGBNormalized(91)
             };
+            // qDebug() <<  x << " " << y;
             positions.push_back(tempPosition);
             positionsData.push_back(tempPoint);
             carImuIndex ++;
-            encoderIndex ++;
-        }
-        else
-        {
             encoderIndex ++;
         }
     }
@@ -260,26 +272,32 @@ bool PointCloudDataManager::fuseLidarData()
     size_t firstDataIndex = data.size() - 1;
     // 由于imu数据密度较低，此处作为缓存优化性能
     size_t lastImuIndex = 0;
-    Eigen::Matrix3d Rx = Eigen::AngleAxisd(-lidarImuDataBuffer[imuIndex].angular.pitch * ang2radCoe, Eigen::Vector3d::UnitX()).matrix();
-    Eigen::Matrix3d Ry = Eigen::AngleAxisd(lidarImuDataBuffer[imuIndex].angular.yaw * ang2radCoe, Eigen::Vector3d::UnitY()).matrix();
+    Eigen::Matrix3d Rx = Eigen::AngleAxisd(lidarImuDataBuffer[imuIndex].angular.yaw * ang2radCoe, Eigen::Vector3d::UnitY()).matrix();
+    Eigen::Matrix3d Ry = Eigen::AngleAxisd(-lidarImuDataBuffer[imuIndex].angular.pitch * ang2radCoe, Eigen::Vector3d::UnitX()).matrix();
     Eigen::Matrix3d Rz = Eigen::AngleAxisd(-lidarImuDataBuffer[imuIndex].angular.roll * ang2radCoe, Eigen::Vector3d::UnitZ()).matrix();
-    Eigen::Matrix3d R = Rz * Ry * Rx;
+    Eigen::Matrix3d R = Rx * Ry * Rz;
     float red = RGBNormalized(redOld), green = RGBNormalized(greenOld), blue = RGBNormalized(blueOld);
     while (imuIndex < lidarImuDataBuffer.size() && pointsIndex < pointsBuffer.size())
     {
+        //如果当前不是正向扫描，则跳过
+        if (lidarImuDataBuffer[imuIndex].angular_velocity.angular_velocity_y > -10.0)
+        {
+            // qDebug() << lidarImuDataBuffer[imuIndex].angular_velocity.angular_velocity_y;
+            lastImuIndex = imuIndex;
+            imuIndex++;
+            continue;
+        }
+
+        //更新旋转矩阵，更新融合精度
         if (lastImuIndex != imuIndex)
         {
             // 如果index相同则不再重复计算
-            Rx = Eigen::AngleAxisd(-lidarImuDataBuffer[imuIndex].angular.pitch * ang2radCoe, Eigen::Vector3d::UnitX()).matrix();
-            Ry = Eigen::AngleAxisd(lidarImuDataBuffer[imuIndex].angular.yaw * ang2radCoe, Eigen::Vector3d::UnitY()).matrix();
+            // Rx = Eigen::AngleAxisd(-lidarImuDataBuffer[imuIndex].angular.pitch * ang2radCoe, Eigen::Vector3d::UnitX()).matrix();
+            // Ry = Eigen::AngleAxisd(lidarImuDataBuffer[imuIndex].angular.yaw * ang2radCoe, Eigen::Vector3d::UnitY()).matrix();
+            Rx = Eigen::AngleAxisd(lidarImuDataBuffer[imuIndex].angular.yaw * ang2radCoe, Eigen::Vector3d::UnitY()).matrix();
+            Ry = Eigen::AngleAxisd(-lidarImuDataBuffer[imuIndex].angular.pitch * ang2radCoe, Eigen::Vector3d::UnitX()).matrix();
             Rz = Eigen::AngleAxisd(-lidarImuDataBuffer[imuIndex].angular.roll * ang2radCoe, Eigen::Vector3d::UnitZ()).matrix();
             R = Rx * Ry * Rz;
-            if (lidarImuDataBuffer[imuIndex].angular_velocity.angular_velocity_y > -5)
-            {
-                lastImuIndex = imuIndex;
-                imuIndex++;
-                continue;
-            }
 
             // 启用自动精度
             if (enableAutoAccuracy)
@@ -301,42 +319,43 @@ bool PointCloudDataManager::fuseLidarData()
             lastImuIndex = imuIndex;
         }
 
+        //如果激光点距离不在有效范围，则无视
+        if (pointsBuffer[pointsIndex].distance <= MIN_LIDAR_DISTANCE || pointsBuffer[pointsIndex].distance  > MAX_LIDAR_DISTANCE)
+        {
+            pointsIndex++;
+            continue;
+        }
+
         if (pointsBuffer[pointsIndex].timestamp - lidarImuDataBuffer[imuIndex].timestamp > fusionAccuracy)
         {
             imuIndex++;
         }
-        else if (abs(pointsBuffer[pointsIndex].timestamp - lidarImuDataBuffer[imuIndex].timestamp) < fusionAccuracy)
+        else if (lidarImuDataBuffer[imuIndex].timestamp - pointsBuffer[pointsIndex].timestamp > fusionAccuracy)
         {
-            if (pointsBuffer[pointsIndex].distance <= 0.3 || pointsBuffer[pointsIndex].distance  > 5.0)
-            {
-                // 距离小于30cm视为无效点
-                pointsIndex++;
-                continue;
-            }
-
+            pointsIndex++;
+        }
+        else
+        {
             // RCLCPP_INFO(rclcpp::get_logger("main"), "%ld", fusionAccuracy);
-            double angle_rad = (pointsBuffer[pointsIndex].angle + 90 - 0.5) * ang2radCoe;
+            double angle_rad = (pointsBuffer[pointsIndex].angle + 90 - 0) * ang2radCoe;
             Eigen::Vector3d local_vector(-pointsBuffer[pointsIndex].distance * std::sin(angle_rad), pointsBuffer[pointsIndex].distance * std::cos(angle_rad), 0);
             Eigen::Vector3d worldVector = R * local_vector;
 
+            float positionX = positions[positions.size() - 1].pos.x(), positionY = positions[positions.size() - 1].pos.y();
             // RGB(255, 51, 0)
             // RGB(28, 126, 214
-            double normalized_distance = (pointsBuffer[pointsIndex].distance - 0) / 5;
-            red = RGBNormalized((1 - normalized_distance) * 255 + normalized_distance * 28);
-            green = RGBNormalized((1 - normalized_distance) * 51 + normalized_distance * 126);
-            blue = RGBNormalized((1 - normalized_distance) * 0 + normalized_distance * 214);
+            double normalized_distance = (pointsBuffer[pointsIndex].distance - MIN_LIDAR_DISTANCE) / MAX_LIDAR_DISTANCE;
+            red = RGBNormalized(255 - normalized_distance * 227);
+            green = RGBNormalized(51 + normalized_distance * 75);
+            blue = RGBNormalized(normalized_distance * 214);
             PointCloudVertex tempPoint =
             {
-                static_cast<float>(-worldVector.x()), static_cast<float>(worldVector.z()), static_cast<float>(worldVector.y()),
+                static_cast<float>(-worldVector.x() + positionX), static_cast<float>(worldVector.z() + positionY), static_cast<float>(worldVector.y()),
                 red, green, blue
             };
             data.push_back(tempPoint);
 
             count++;
-            pointsIndex++;
-        }
-        else
-        {
             pointsIndex++;
         }
     }

@@ -318,8 +318,19 @@ void PointCloudWidget::drawMeshSlot(int rowBegin, int  rows, int  columnBegin, i
 
 void PointCloudWidget::clearPointCloudSlot()
 {
-    pointCloudDataManager.clearData();
+    pointCloudDataManager.clearPointCloud();
     update();
+}
+
+void PointCloudWidget::clearPositionPointSlot()
+{
+    pointCloudDataManager.clearPositionPoint();
+    update();
+}
+
+void PointCloudWidget::syncIMURollSlot()
+{
+    pointCloudDataManager.syncIMURoll();
 }
 
 void PointCloudWidget::setMinRenderDistanceSlot(float val)
