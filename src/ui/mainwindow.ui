@@ -89,7 +89,7 @@
          <x>0</x>
          <y>0</y>
          <width>1198</width>
-         <height>168</height>
+         <height>172</height>
         </rect>
        </property>
        <property name="sizePolicy">
@@ -985,8 +985,30 @@
               </sizepolicy>
              </property>
              <layout class="QGridLayout" name="gridLayout_3">
-              <item row="1" column="0">
-               <widget class="QToolButton" name="enableKeyboardControl">
+              <item row="1" column="1">
+               <widget class="QComboBox" name="carModeSelecter">
+                <property name="cursor">
+                 <cursorShape>PointingHandCursor</cursorShape>
+                </property>
+                <item>
+                 <property name="text">
+                  <string>静止</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>扫描模式</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>运动模式</string>
+                 </property>
+                </item>
+               </widget>
+              </item>
+              <item row="3" column="0">
+               <widget class="QToolButton" name="syncIMURoll">
                 <property name="minimumSize">
                  <size>
                   <width>60</width>
@@ -997,10 +1019,10 @@
                  <cursorShape>PointingHandCursor</cursorShape>
                 </property>
                 <property name="text">
-                 <string>启用键盘控制</string>
+                 <string>同步IMU航向角</string>
                 </property>
                 <property name="checkable">
-                 <bool>true</bool>
+                 <bool>false</bool>
                 </property>
                </widget>
               </item>
@@ -1085,30 +1107,8 @@
                 </layout>
                </widget>
               </item>
-              <item row="1" column="1">
-               <widget class="QComboBox" name="carModeSelecter">
-                <property name="cursor">
-                 <cursorShape>PointingHandCursor</cursorShape>
-                </property>
-                <item>
-                 <property name="text">
-                  <string>静止</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>扫描模式</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>运动模式</string>
-                 </property>
-                </item>
-               </widget>
-              </item>
-              <item row="3" column="0">
-               <widget class="QToolButton" name="syncIMURoll">
+              <item row="1" column="0">
+               <widget class="QToolButton" name="enableKeyboardControl">
                 <property name="minimumSize">
                  <size>
                   <width>60</width>
@@ -1119,10 +1119,29 @@
                  <cursorShape>PointingHandCursor</cursorShape>
                 </property>
                 <property name="text">
-                 <string>同步IMU航向角</string>
+                 <string>启用键盘控制</string>
                 </property>
                 <property name="checkable">
                  <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="0">
+               <widget class="QToolButton" name="cameraTakePhoto">
+                <property name="minimumSize">
+                 <size>
+                  <width>60</width>
+                  <height>30</height>
+                 </size>
+                </property>
+                <property name="cursor">
+                 <cursorShape>PointingHandCursor</cursorShape>
+                </property>
+                <property name="text">
+                 <string>相机拍摄</string>
+                </property>
+                <property name="checkable">
+                 <bool>false</bool>
                 </property>
                </widget>
               </item>

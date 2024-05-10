@@ -63,6 +63,19 @@ DeviceController::DeviceController()
         RCLCPP_INFO_STREAM(rclcpp::get_logger("DeviceController"),  "Car IMU 模块节点线程[退出]");
     })
     .detach();
+
+    std::thread([this]()
+    {
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("DeviceController"),  "Camera 模块节点线程[启动]");
+        auto cameraNode = std::make_shared<CameraNode>();
+        this->cameraNode = cameraNode;
+        cameraNode->setCallback([this](const sensor_msgs::msg::Image::SharedPtr msg) -> void
+        {
+            this->cameraDataCallback(msg);
+        });
+        cameraNode->run();
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("DeviceController"),  "Camera 模块节点线程[退出]");
+    }).detach();
 }
 
 void DeviceController::lidarScanCallback(const message::msg::LidarData::SharedPtr msg)
@@ -89,6 +102,23 @@ void DeviceController::voltageDataCallback(const message::msg::CarVotageData::Sh
     emit sendVoltageDataSignal(msg);
 }
 
+void DeviceController::cameraDataCallback(const sensor_msgs::msg::Image::SharedPtr msg)
+{
+    try
+    {
+        cv::Mat frame = cv_bridge::toCvCopy(msg, msg->encoding)->image;
+        std::string filename = std::string("./image_") + std::to_string(std::time(nullptr)) + ".jpg";
+
+        // 保存图像到本地
+        cv::imwrite(filename, frame);
+        RCLCPP_INFO(rclcpp::get_logger("camera"), "Saved image: %s", filename.c_str());
+    }
+    catch (cv_bridge::Exception &e)
+    {
+        RCLCPP_ERROR(rclcpp::get_logger("camera"), "cv_bridge exception: %s", e.what());
+    }
+}
+
 void DeviceController::lidarImuDataCallback(const message::msg::ImuData::SharedPtr msg)
 {
     // std::vector<message::msg::ImuDataFrame> list = msg->data;
@@ -113,4 +143,9 @@ void DeviceController::sendControlSlot(int state, int speed)
 {
     // qDebug() << state << " " << speed;
     carMaterNode->publishMotionControl(state, speed);
+}
+
+void DeviceController::sendCameraControlSlot()
+{
+    cameraNode->publishCameraControl();
 }

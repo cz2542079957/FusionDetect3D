@@ -41,6 +41,7 @@ signals:
     void baseSpeedSignal(float value);
     void carSpeedSignal(int value);
     void syncIMURollSignal();
+    void sendCameraControlSignal();
 
 
 private slots:
@@ -66,5 +67,6 @@ private slots:
     void on_pointSizeController_valueChanged(int value);
     void on_positionPointSizeController_valueChanged(int value);
     void on_syncIMURoll_clicked();
+    void on_cameraTakePhoto_clicked();
 };
 #endif // MAINWINDOW_H

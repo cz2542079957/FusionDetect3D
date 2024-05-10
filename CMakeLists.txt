@@ -11,6 +11,7 @@ endif()
 set(ROS2_INCLUDE /opt/ros/humble/include)
 include_directories(
     ${ROS2_INCLUDE}
+    ${OpenCV_INCLUDE_DIRS}
 )
 # 引入ros2相关包
 list(APPEND CMAKE_PREFIX_PATH "/home/chenzhen/Desktop/ros2_ws/install/message")
@@ -18,6 +19,8 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(message REQUIRED)
+find_package(cv_bridge REQUIRED)
+find_package(OpenCV REQUIRED)
 
 
 ###################################################################################
@@ -76,11 +79,12 @@ FILE(GLOB SOURCE
 )
 add_executable(main ${SOURCE})
 # ros2 依赖
-set(ROS2_DEPENDENCIES rclcpp rcl std_msgs message)
+set(ROS2_DEPENDENCIES rclcpp rcl std_msgs message cv_bridge)
 # qt6 依赖
 set(QT6_DEPENDENCIES Qt6::Widgets Qt6::OpenGLWidgets)
 target_link_libraries(main
     ${QT6_DEPENDENCIES}
+    ${OpenCV_LIBS}
 )
 ament_target_dependencies(main
     ${ROS2_DEPENDENCIES}

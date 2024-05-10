@@ -3,6 +3,9 @@
 #include <QObject>
 #include <carMasterNode.h>
 #include "carImuNode.h"
+#include "cameraNode.h"
+#include <cv_bridge/cv_bridge.h>
+#include <opencv2/highgui.hpp>
 #include <lidarNode.h>
 #include <lidarImuNode.h>
 
@@ -13,6 +16,7 @@ public:
     DeviceController();
 
     std::shared_ptr<CarMasterNode> carMaterNode;
+    std::shared_ptr<CameraNode> cameraNode;
 
 private:
     //雷达扫描数据回调函数，用于对接ui线程
@@ -27,6 +31,8 @@ private:
     void servoDataCallback(const message::msg::CarServoData::SharedPtr msg);
     //电池电压数据回调函数
     void voltageDataCallback(const message::msg::CarVotageData::SharedPtr msg);
+    //相机数据回调函数
+    void cameraDataCallback(const sensor_msgs::msg::Image::SharedPtr msg);
 
 signals:
     //发送点云数据
@@ -46,6 +52,8 @@ signals:
 public slots:
     // void  sendModeSlot(int mode);
     void  sendControlSlot(int state, int speed);
+
+    void sendCameraControlSlot();
 };
 
 

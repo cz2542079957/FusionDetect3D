@@ -44,6 +44,7 @@ bool MainWindow::SignalsSlotsRegister()
     connect(this->dc, &DeviceController::sendCarImuDataSignal, ui->pointCloudWidget, &PointCloudWidget::recvCarImuDataSlot);
     connect(&ui->pointCloudWidget->car, &CarController::sendControlSignal, this->dc, &DeviceController::sendControlSlot);
     connect(this->dc, &DeviceController::sendVoltageDataSignal, this, &MainWindow::sendVoltageDataSlot);
+    connect(this, &MainWindow::sendCameraControlSignal, this->dc, &DeviceController::sendCameraControlSlot);
 
     // 点云界面
     connect(&ui->pointCloudWidget->pointCloudDataManager, SIGNAL(updateGraph()), ui->pointCloudWidget, SLOT(update()));
@@ -201,5 +202,11 @@ void MainWindow::on_positionPointSizeController_valueChanged(int value)
 void MainWindow::on_syncIMURoll_clicked()
 {
     emit syncIMURollSignal();
+}
+
+
+void MainWindow::on_cameraTakePhoto_clicked()
+{
+    emit sendCameraControlSignal();
 }
 
