@@ -47,6 +47,8 @@ signals:
     void sendCarImuDataSignal(const message::msg::ImuData::SharedPtr msg);
     //发送电池电压数据
     void sendVoltageDataSignal(const message::msg::CarVotageData::SharedPtr msg);
+    //发送camera拍摄保存的图片
+    void sendCameraDataSignal(const std::string fileName);
 
 
 public slots:

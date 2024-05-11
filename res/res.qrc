@@ -8,5 +8,8 @@
         <file>shader/point_430.vert</file>
         <file>shader/position_430.frag</file>
         <file>shader/position_430.vert</file>
+        <file>yolo-fastest/coco.names</file>
+        <file>yolo-fastest/yolo-fastest-xl.cfg</file>
+        <file>yolo-fastest/yolo-fastest-xl.weights</file>
     </qresource>
 </RCC>

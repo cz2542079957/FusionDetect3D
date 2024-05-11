@@ -1,4 +1,6 @@
 #include "deviceController.h"
+#include "QStandardPaths"
+#include "filesystem"
 
 DeviceController::DeviceController()
 {
@@ -92,6 +94,7 @@ void DeviceController::lidarScanCallback(const message::msg::LidarData::SharedPt
 
 void DeviceController::servoDataCallback(const message::msg::CarServoData::SharedPtr msg)
 {
+    Q_UNUSED(msg);
     // qDebug() << msg->angle1 << " " << msg->angle2;
     // todo 完成激光雷达扫描
     // emit sendServoDataSignal(msg);
@@ -107,11 +110,26 @@ void DeviceController::cameraDataCallback(const sensor_msgs::msg::Image::SharedP
     try
     {
         cv::Mat frame = cv_bridge::toCvCopy(msg, msg->encoding)->image;
-        std::string filename = std::string("./image_") + std::to_string(std::time(nullptr)) + ".jpg";
+        QString picturesFolderPath = QStandardPaths::writableLocation(QStandardPaths::PicturesLocation);
+        std::string directory = picturesFolderPath.toStdString() + std::string("/FD3_RawImages/");
+        std::string path = directory + "image_" + std::to_string(std::time(nullptr)) + ".jpg";
+
+        // 检查目录是否存在，如果不存在则创建
+        if (!std::filesystem::exists(directory))
+        {
+            std::filesystem::create_directories(directory);
+        }
 
         // 保存图像到本地
-        cv::imwrite(filename, frame);
-        RCLCPP_INFO(rclcpp::get_logger("camera"), "Saved image: %s", filename.c_str());
+        if (cv::imwrite(path, frame))
+        {
+            emit sendCameraDataSignal(path);    // 发送给ImageWidget
+            RCLCPP_INFO(rclcpp::get_logger("camera"), "Saved image: %s", path.c_str());
+        }
+        else
+        {
+            RCLCPP_ERROR(rclcpp::get_logger("camera"), "Failed to save image: %s", path.c_str());
+        }
     }
     catch (cv_bridge::Exception &e)
     {

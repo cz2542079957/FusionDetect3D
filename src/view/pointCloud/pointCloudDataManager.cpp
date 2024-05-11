@@ -78,6 +78,14 @@ const std::vector<PointCloudVertex> &PointCloudDataManager::getData() const
     return this->data;
 }
 
+CarPosition PointCloudDataManager::getCarPosition()
+{
+    message::msg::ImuDataFrame *imuData =  &carImuDataBuffer[carImuDataBuffer.size() - 1];
+    Position *p  = &positions[positions.size() - 1];
+    CarPosition cp = {p->pos.x(), p->pos.y(), imuData->angular.roll};
+    return cp;
+}
+
 void PointCloudDataManager::clearPointCloud()
 {
     pointsBuffer.clear();
@@ -85,8 +93,17 @@ void PointCloudDataManager::clearPointCloud()
     lidarImuDataBuffer.clear();
 
     data.clear();
-    batches.clear();
-    handledBatchIndex = -1;
+    handledData = 0;
+    // batches.clear();
+    // handledBatchIndex = -1;
+}
+
+void PointCloudDataManager::loadPointCloud(std::vector<PointCloudVertex> list)
+{
+    clearPointCloud();
+    data.assign(list.begin(), list.end());
+    // qDebug() << data.size();
+    emit updateGraph();
 }
 
 void PointCloudDataManager::clearPositionPoint()
@@ -121,11 +138,12 @@ unsigned long PointCloudDataManager::getCurrentCacheSize() const
 
 unsigned long PointCloudDataManager::getPointNeedDrawNumber()
 {
-    unsigned long length = 0;
-    for (long i = batches.size() - 1; i >= handledBatchIndex && i >= 0; i--)
-    {
-        length += batches[i].size;
-    }
+    unsigned long length = data.size() - handledData;
+    // for (long i = batches.size() - 1; i >= handledBatchIndex && i >= 0; i--)
+    // {
+    //     length += batches[i].size;
+    // }
+    handledData = data.size();
     return length;
 }
 
@@ -149,8 +167,8 @@ bool PointCloudDataManager::fuseData()
     bool updateFlag = false;
     if (currentMode != 1 && lastMode != currentMode)
     {
-        batches.clear();
-        handledBatchIndex = -1;
+        // batches.clear();
+        // handledBatchIndex = -1;
         pointsBuffer.clear();
         servoDataBuffer.clear();
         lidarImuDataBuffer.clear();
@@ -265,11 +283,11 @@ bool PointCloudDataManager::fuseLidarData()
         return false;
     }
 
-    size_t count = 0;
+    // size_t count = 0;
     float ang2radCoe = M_PI / 180.0f;
     size_t imuIndex = 0;
     size_t pointsIndex = 0;
-    size_t firstDataIndex = data.size() - 1;
+    // size_t firstDataIndex = data.size() - 1;
     // 由于imu数据密度较低，此处作为缓存优化性能
     size_t lastImuIndex = 0;
     Eigen::Matrix3d Rx = Eigen::AngleAxisd(lidarImuDataBuffer[imuIndex].angular.yaw * ang2radCoe, Eigen::Vector3d::UnitY()).matrix();
@@ -345,9 +363,9 @@ bool PointCloudDataManager::fuseLidarData()
             // RGB(255, 51, 0)
             // RGB(28, 126, 214
             double normalized_distance = (pointsBuffer[pointsIndex].distance - MIN_LIDAR_DISTANCE) / MAX_LIDAR_DISTANCE;
-            red = RGBNormalized(255 - normalized_distance * 227);
-            green = RGBNormalized(51 + normalized_distance * 75);
-            blue = RGBNormalized(normalized_distance * 214);
+            red = RGBNormalized(redNew - normalized_distance * 227);
+            green = RGBNormalized(greenNew + normalized_distance * 75);
+            blue = RGBNormalized(blueNew + normalized_distance * 214);
             PointCloudVertex tempPoint =
             {
                 static_cast<float>(-worldVector.x() + positionX), static_cast<float>(worldVector.z() + positionY), static_cast<float>(worldVector.y()),
@@ -355,12 +373,12 @@ bool PointCloudDataManager::fuseLidarData()
             };
             data.push_back(tempPoint);
 
-            count++;
+            // count++;
             pointsIndex++;
         }
     }
     // RCLCPP_INFO(rclcpp::get_logger("main"), "done： %ld %ld %ld", count, imuIndex, pointsIndex);
-    batches.push_back(BatchFrame{count, pointsBuffer[0].timestamp, firstDataIndex});
+    // batches.push_back(BatchFrame{count, pointsBuffer[0].timestamp, firstDataIndex});
 
     pointsBuffer.erase(pointsBuffer.begin(), pointsBuffer.begin() + pointsIndex);
     lidarImuDataBuffer.erase(lidarImuDataBuffer.begin(), lidarImuDataBuffer.begin() + imuIndex);
@@ -370,26 +388,26 @@ bool PointCloudDataManager::fuseLidarData()
 
 bool PointCloudDataManager::handlePointsColor()
 {
-    if (batches.size() == 0 || handledBatchIndex == (long long)batches.size() - 1)
-    {
-        // 批次没有数据 或者 全部处理完毕则不需要更新
-        return false;
-    }
-    long long timeNow = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-    if (timeOffset == -1)
-    {
-        // 计算时间偏移量,用于同步时间
-        timeOffset = timeNow - batches[batches.size() - 1].timestamp / 1000000;
-    }
-    // 计算当前最后一次维护的批次号
-    for (size_t i = handledBatchIndex + 1; i < batches.size(); i++)
-    {
-        if (timeNow - batches[i].timestamp / 1000000 - timeOffset < recentColorHandleTime)
-        {
-            break;
-        }
-        handledBatchIndex = i;
-    }
+    // if (batches.size() == 0 || handledBatchIndex == (long long)batches.size() - 1)
+    // {
+    //     // 批次没有数据 或者 全部处理完毕则不需要更新
+    //     return false;
+    // }
+    // long long timeNow = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+    // if (timeOffset == -1)
+    // {
+    //     // 计算时间偏移量,用于同步时间
+    //     timeOffset = timeNow - batches[batches.size() - 1].timestamp / 1000000;
+    // }
+    // // 计算当前最后一次维护的批次号
+    // for (size_t i = handledBatchIndex + 1; i < batches.size(); i++)
+    // {
+    //     if (timeNow - batches[i].timestamp / 1000000 - timeOffset < recentColorHandleTime)
+    //     {
+    //         break;
+    //     }
+    //     handledBatchIndex = i;
+    // }
     // RCLCPP_INFO(rclcpp::get_logger("main"), "%lld , %ld",  handledBatchIndex, batches.size());
     // RCLCPP_INFO(rclcpp::get_logger("main"), "%lld, %ld", batches[batches.size() - 1].timestamp,  batches[batches.size() - 1].firstDataIndex);
     // RCLCPP_INFO(rclcpp::get_logger("main"), "%ld",  batches.size());

@@ -1,6 +1,9 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+#include "QFileDialog"
+#include "QMessageBox"
+
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
@@ -44,14 +47,17 @@ bool MainWindow::SignalsSlotsRegister()
     connect(this->dc, &DeviceController::sendCarImuDataSignal, ui->pointCloudWidget, &PointCloudWidget::recvCarImuDataSlot);
     connect(&ui->pointCloudWidget->car, &CarController::sendControlSignal, this->dc, &DeviceController::sendControlSlot);
     connect(this->dc, &DeviceController::sendVoltageDataSignal, this, &MainWindow::sendVoltageDataSlot);
-    connect(this, &MainWindow::sendCameraControlSignal, this->dc, &DeviceController::sendCameraControlSlot);
+    connect(ui->imageWidget, &ImageWidget::sendCameraControlSignal, this->dc, &DeviceController::sendCameraControlSlot);
+    connect(this->dc, &DeviceController::sendCameraDataSignal, ui->imageWidget, &ImageWidget::recvCameraDataSlot);
 
     // 点云界面
-    connect(&ui->pointCloudWidget->pointCloudDataManager, SIGNAL(updateGraph()), ui->pointCloudWidget, SLOT(update()));
-    connect(&ui->pointCloudWidget->camera, SIGNAL(updateGraph()), ui->pointCloudWidget, SLOT(update()));
+    connect(&ui->pointCloudWidget->pointCloudDataManager, &PointCloudDataManager::updateGraph, ui->pointCloudWidget,
+            static_cast<void (PointCloudWidget::*)()>(&PointCloudWidget::update));
+    connect(&ui->pointCloudWidget->camera, &CameraController::updateGraph, ui->pointCloudWidget,
+            static_cast<void (PointCloudWidget::*)()>(&PointCloudWidget::update));
 
     // 树形数据接收链路
-    connect(ui->pointCloudWidget, SIGNAL(infoTreeUpdateSignal(CameraController)), ui->infoTree, SLOT(update(CameraController)));
+    connect(ui->pointCloudWidget, &PointCloudWidget::infoTreeUpdateSignal, ui->infoTree, &InfoTree::update);
 
     return true;
 }
@@ -204,9 +210,74 @@ void MainWindow::on_syncIMURoll_clicked()
     emit syncIMURollSignal();
 }
 
-
-void MainWindow::on_cameraTakePhoto_clicked()
+void MainWindow::on_savePointCloud_clicked()
 {
-    emit sendCameraControlSignal();
+    QString dirPath;
+    QString saveName = "points"; // 文本文件的默认名称
+    QDateTime time = QDateTime::currentDateTime();
+    QString str = time.toString("yyyyMMdd_hhmmss"); // 当前时间的字符串表示
+    QString saveNameWithTime = QString("%1_%2.bin").arg(saveName).arg(str); // 结合时间和文件名
+
+    dirPath = QFileDialog::getExistingDirectory(this, "选择保存文件夹", ""); // 弹出文件夹选择对话框
+
+    if (dirPath.isEmpty())
+    {
+        QMessageBox::information(this, "信息", "保存失败，未选择文件夹");
+    }
+    else
+    {
+        QString filePath = QString("%1/%2").arg(dirPath).arg(saveNameWithTime); // 完整的文件路径
+        QFile file(filePath);
+        if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+        {
+            QMessageBox::information(this, "信息", "保存失败，无法打开文件");
+        }
+        else
+        {
+            QDataStream out(&file);
+            out.setVersion(QDataStream::Qt_6_0); // 设置数据流的版本，确保兼容性
+            for (const PointCloudVertex &vertex : ui->pointCloudWidget->pointCloudDataManager.getData())
+            {
+                out << vertex.x << vertex.y << vertex.z << vertex.red << vertex.green << vertex.blue;
+            }
+            file.close();
+            QMessageBox::information(this, "信息", "保存成功");
+        }
+    }
+}
+
+
+void MainWindow::on_loadPointCloud_clicked()
+{
+    QString dirPath = QFileDialog::getOpenFileName(this, "选择要读取的文件", "", "Binary Files (*.bin);;All Files (*)"); // 弹出文件选择对话框
+
+    if (dirPath.isEmpty())
+    {
+        QMessageBox::information(this, "信息", "读取失败，未选择文件");
+        return;
+    }
+
+    QFile file(dirPath);
+    if (!file.open(QIODevice::ReadOnly))
+    {
+        QMessageBox::information(this, "信息", "读取失败，无法打开文件");
+    }
+    else
+    {
+
+        QDataStream in(&file);
+        in.setVersion(QDataStream::Qt_6_0);
+        std::vector<PointCloudVertex> list;
+        while (!in.atEnd())
+        {
+            PointCloudVertex vertex;
+            in >> vertex.x >> vertex.y >> vertex.z >> vertex.red >> vertex.green >> vertex.blue;
+            list.push_back(vertex);
+        }
+        ui->pointCloudWidget->pointCloudDataManager.loadPointCloud(list);
+        file.close();
+        QMessageBox::information(this, "信息", "读取成功");
+    }
+
 }
 

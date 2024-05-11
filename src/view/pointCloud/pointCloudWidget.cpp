@@ -223,7 +223,7 @@ void PointCloudWidget::paintGL()
         unsigned long needPaintNumber = pointCloudDataManager.getPointNeedDrawNumber();
         unsigned long offset =  pointCloudDataManager.getCurrentCacheSize() - needPaintNumber;
         glBufferSubData(GL_ARRAY_BUFFER, offset * sizeof(PointCloudVertex),
-                        pointCloudDataManager.getPointNeedDrawNumber() * sizeof(PointCloudVertex),
+                        needPaintNumber * sizeof(PointCloudVertex),
                         &pointCloudDataManager.getData()[offset]);
         shaderProgramPoints.bind();
         shaderProgramPoints.setUniformValue("model", model);

@@ -60,6 +60,12 @@ struct BatchFrame
     unsigned long firstDataIndex = 0;
 };
 
+struct CarPosition
+{
+    float x, y;
+    double roll;
+} ;
+
 class PointCloudWidget;
 
 /*
@@ -85,6 +91,8 @@ public:
     bool addCarImuData(message::msg::ImuData::SharedPtr &_newData);
     //清空点云
     void clearPointCloud();
+    //加载点云
+    void loadPointCloud(std::vector<PointCloudVertex> list);
     //清空位置点
     void clearPositionPoint();
     //同步IMU航向角
@@ -97,6 +105,8 @@ public:
     const std::vector<PointCloudVertex> &getPositionData() const;
     //数据
     const std::vector<PointCloudVertex> &getData() const;
+    //获取小车方位
+    CarPosition getCarPosition();
 
     //获取当前数据大小
     unsigned long getCurrentPositionCacheSize() const;
@@ -142,11 +152,12 @@ private:
     size_t handledPositionsData = 0;
     //当前数据（用于图像渲染）
     std::vector<PointCloudVertex> data;
-    //每一批数据的大小(单位：PointCloudVertex)
-    std::vector<BatchFrame>  batches;
-    //当前已经处理完颜色的批次index
-    long long handledBatchIndex = -1;
-    long long timeOffset = -1;
+    size_t handledData = 0;
+    // //每一批数据的大小(单位：PointCloudVertex)
+    // std::vector<BatchFrame>  batches;
+    // //当前已经处理完颜色的批次index
+    // long long handledBatchIndex = -1;
+    // long long timeOffset = -1;
 
     //数据融合
     bool fuseData();
@@ -165,7 +176,7 @@ private:
     //处理最近n毫秒的点颜色
     long long recentColorHandleTime = 200;
     //新旧点颜色
-    float redNew =  255,  greenNew  =  31, blueNew = 0;
+    float redNew =  255,  greenNew  =  51, blueNew = 0;
     float redOld = 28, greenOld = 126, blueOld = 214;
 
 public slots:

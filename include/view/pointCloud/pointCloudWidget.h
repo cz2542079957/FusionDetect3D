@@ -10,6 +10,7 @@
 #include "QOpenGLShaderProgram"
 
 
+
 class PointCloudWidget : public QOpenGLWidget, QOpenGLFunctions_4_3_Core
 {
     Q_OBJECT
@@ -82,7 +83,6 @@ private :
     QOpenGLShaderProgram shaderProgramPosition;
     //点大小
     float positionPointSize = 3;
-
 
     //是否允许小车控制
     bool enableCarControl = false;
