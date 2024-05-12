@@ -15,7 +15,7 @@ private:
     InfoTreeModel *model;
 
 public slots:
-    void update(const   CameraController &camera);
+    void update(const CameraController &camera);
 
 };
 

@@ -56,8 +56,11 @@ bool MainWindow::SignalsSlotsRegister()
     connect(&ui->pointCloudWidget->camera, &CameraController::updateGraph, ui->pointCloudWidget,
             static_cast<void (PointCloudWidget::*)()>(&PointCloudWidget::update));
 
-    // 树形数据接收链路
-    connect(ui->pointCloudWidget, &PointCloudWidget::infoTreeUpdateSignal, ui->infoTree, &InfoTree::update);
+    // info数据接收链路
+    connect(ui->pointCloudWidget, &PointCloudWidget::infoWidgetUpdateSignal, ui->infoWidget, &InfoWidget::refresh);
+
+    //修改小车位置
+    connect(ui->infoWidget, &InfoWidget::setCarPosSignal, &ui->pointCloudWidget->pointCloudDataManager, &PointCloudDataManager::setCarPosSlot);
 
     return true;
 }

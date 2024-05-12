@@ -4,10 +4,14 @@
 #include "QWidget"
 #include "QListWidget"
 #include "QVBoxLayout"
+#include "QProgressDialog"
+#include "QLabel"
+#include "QFileInfo"
+#include "yolo.h"
 
 namespace Ui
 {
-    class imageWidget;
+    class ImageWidget;
 }
 
 #define IMAGE_SIZE 120
@@ -34,13 +38,15 @@ public:
     void refresh();
 
 private:
-    Ui::imageWidget *ui;
-    QListWidget needDetectImageWidget;
-    QListWidget detectedImageWidget;
+    Ui::ImageWidget *ui;
+    //YOLO
+    YOLO *yolo;
 
     //拍摄的图片
     std::vector<Photo> rawPhotos;
     std::vector<Photo> handledPhotos;
+
+    QProgressDialog *progressDialog;
 
 signals:
     void sendCameraControlSignal();
@@ -53,6 +59,23 @@ public slots:
 private slots:
     void on_cameraTakePhoto_clicked();
     void on_detectPhoto_clicked();
+};
+
+class ImageBrowser : public QDialog
+{
+public:
+    ImageBrowser(const QString &imagePath, QWidget *parent = nullptr) : QDialog(parent)
+    {
+        QVBoxLayout *layout = new QVBoxLayout(this);
+        QLabel *imageLabel = new QLabel(this);
+        QImage image(imagePath);
+        imageLabel->setPixmap(QPixmap::fromImage(image));
+        layout->addWidget(imageLabel);
+
+        // 设置对话框的标题为图片的文件名
+        QFileInfo fileInfo(imagePath);
+        setWindowTitle(fileInfo.fileName());
+    }
 };
 
 #endif // IMAGEWIDGET_H

@@ -182,6 +182,8 @@ private:
 public slots:
     //定时任务（执行点云数据融合 与 颜色渲染）
     void  scheduledTask();
+    //设置小车当前位置
+    void setCarPosSlot(float x, float y);
 
 signals:
     void updateGraph();

@@ -247,7 +247,7 @@ void PointCloudWidget::paintGL()
     }
 
     //同步更新信息
-    emit infoTreeUpdateSignal(camera);
+    emit infoWidgetUpdateSignal(camera, pointCloudDataManager);
 }
 
 void PointCloudWidget::focusOutEvent(QFocusEvent *event)

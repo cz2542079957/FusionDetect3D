@@ -105,7 +105,7 @@ protected:
     virtual void focusOutEvent(QFocusEvent *event) override;
 
 signals:
-    void infoTreeUpdateSignal(const CameraController &camera);
+    void infoWidgetUpdateSignal(const CameraController &camera,  PointCloudDataManager &pointCloudDataManager);
 
 public slots:
     void onTimeout();

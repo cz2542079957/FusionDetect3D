@@ -112,7 +112,8 @@ void DeviceController::cameraDataCallback(const sensor_msgs::msg::Image::SharedP
         cv::Mat frame = cv_bridge::toCvCopy(msg, msg->encoding)->image;
         QString picturesFolderPath = QStandardPaths::writableLocation(QStandardPaths::PicturesLocation);
         std::string directory = picturesFolderPath.toStdString() + std::string("/FD3_RawImages/");
-        std::string path = directory + "image_" + std::to_string(std::time(nullptr)) + ".jpg";
+        QString fileName = QString("image_%1.jpg").arg(QDateTime::currentDateTime().toString("yyyy-MM-dd_HH-mm-ss_zzz"));
+        std::string path = directory + fileName.toStdString();
 
         // 检查目录是否存在，如果不存在则创建
         if (!std::filesystem::exists(directory))

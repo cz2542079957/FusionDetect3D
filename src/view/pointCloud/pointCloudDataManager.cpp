@@ -160,6 +160,21 @@ void PointCloudDataManager::scheduledTask()
     }
 }
 
+void PointCloudDataManager::setCarPosSlot(float x, float y)
+{
+    Position tempPosition =
+    {
+        {x, y}, {0, 0}
+    };
+    PointCloudVertex tempPoint =
+    {
+        x, y, 0,
+        RGBNormalized(255), RGBNormalized(248), RGBNormalized(91)
+    };
+    positions.push_back(tempPosition);
+    positionsData.push_back(tempPoint);
+}
+
 bool PointCloudDataManager::fuseData()
 {
     int currentMode = parent->car.getMode();

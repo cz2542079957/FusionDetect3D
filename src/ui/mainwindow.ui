@@ -1274,25 +1274,7 @@
             <number>0</number>
            </property>
            <item>
-            <widget class="ImageWidget" name="imageWidget" native="true">
-             <layout class="QGridLayout" name="gridLayout">
-              <property name="leftMargin">
-               <number>0</number>
-              </property>
-              <property name="topMargin">
-               <number>0</number>
-              </property>
-              <property name="rightMargin">
-               <number>0</number>
-              </property>
-              <property name="bottomMargin">
-               <number>0</number>
-              </property>
-              <property name="spacing">
-               <number>0</number>
-              </property>
-             </layout>
-            </widget>
+            <widget class="ImageWidget" name="imageWidget" native="true"/>
            </item>
           </layout>
          </widget>
@@ -1333,6 +1315,12 @@
           </property>
           <item>
            <widget class="QLabel" name="label">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <property name="font">
              <font>
               <pointsize>13</pointsize>
@@ -1344,19 +1332,13 @@
            </widget>
           </item>
           <item>
-           <widget class="InfoTree" name="infoTree">
+           <widget class="InfoWidget" name="infoWidget" native="true">
             <property name="sizePolicy">
-             <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+             <sizepolicy hsizetype="Minimum" vsizetype="MinimumExpanding">
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
-            <property name="selectionMode">
-             <enum>QAbstractItemView::NoSelection</enum>
-            </property>
-            <attribute name="headerVisible">
-             <bool>false</bool>
-            </attribute>
            </widget>
           </item>
          </layout>
@@ -1493,14 +1475,15 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>InfoTree</class>
-   <extends>QTreeView</extends>
-   <header>infoTree.h</header>
-  </customwidget>
-  <customwidget>
    <class>ImageWidget</class>
    <extends>QWidget</extends>
    <header>imageWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>InfoWidget</class>
+   <extends>QWidget</extends>
+   <header>infoWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
@@ -1519,7 +1502,6 @@
   <tabstop>enableKeyboardControl</tabstop>
   <tabstop>carModeSelecter</tabstop>
   <tabstop>carSpeedController</tabstop>
-  <tabstop>infoTree</tabstop>
   <tabstop>scrollArea</tabstop>
  </tabstops>
  <resources/>
