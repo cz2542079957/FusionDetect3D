@@ -140,47 +140,67 @@ void ImageWidget::on_detectPhoto_clicked()
 
     auto task = [this, list, directory, detectedDirectory]()
     {
+        /*
+        对progressDialog的函数的触发使用QMetaObject::invokeMethod的方式的原因是：
+            task函数运行在另一个线程，直接调用UI主线程中创建的progressDialog会导致线程相关错误
+        */
         int size = list.size();
         int handledNumber = 0;
         for (QListWidgetItem *item : list)
         {
-            QString path = directory + item->text();
-            progressDialog->setLabelText("正在识别:" + item->text());
-            for (int i = rawPhotos.size() - 1; i >= 0; --i)
+            try
             {
-                const Photo &p = rawPhotos[i];
-                if (path == QString::fromStdString(p.path))
+                QString path = directory + item->text();
+                QMetaObject::invokeMethod(progressDialog, [this, path]()
                 {
-                    rawPhotos.erase(rawPhotos.begin() + i);
-                    Mat image = imread(path.toStdString());
-                    yolo->detect(image);
-                    QString fileName = QString("image_%1.jpg").arg(QDateTime::currentDateTime().toString("yyyy-MM-dd_HH-mm-ss_zzz"));
-                    std::string path = detectedDirectory.toStdString() + fileName.toStdString();
-                    // 检查目录是否存在，如果不存在则创建
-                    if (!std::filesystem::exists(detectedDirectory.toStdString()))
+                    progressDialog->setLabelText("正在识别:" + path);
+                }, Qt::QueuedConnection);
+                for (int i = rawPhotos.size() - 1; i >= 0; --i)
+                {
+                    const Photo &p = rawPhotos[i];
+                    if (path == QString::fromStdString(p.path))
                     {
-                        std::filesystem::create_directories(detectedDirectory.toStdString());
+                        rawPhotos.erase(rawPhotos.begin() + i);
+                        Mat image = imread(path.toStdString());
+                        yolo->detect(image);
+                        QString fileName = QString("image_%1.jpg").arg(QDateTime::currentDateTime().toString("yyyy-MM-dd_HH-mm-ss_zzz"));
+                        std::string path = detectedDirectory.toStdString() + fileName.toStdString();
+                        // 检查目录是否存在，如果不存在则创建
+                        if (!std::filesystem::exists(detectedDirectory.toStdString()))
+                        {
+                            std::filesystem::create_directories(detectedDirectory.toStdString());
+                        }
+                        //保存图片到输出目录
+                        if (imwrite(path, image))
+                        {
+                            long long time = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+                            Photo p = {path, time, 0, 0, 0};
+                            handledPhotos.push_back(p);
+                        }
+                        break;
                     }
-                    if (imwrite(path, image))
-                    {
-                        long long time = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-                        Photo p = {path, time, 0, 0, 0};
-                        handledPhotos.push_back(p);
-                    }
-                    break;
                 }
+                handledNumber++;
+                QMetaObject::invokeMethod(progressDialog, [this, handledNumber, size]()
+                {
+                    progressDialog->setValue(((handledNumber  + 0.0) / size) * 100.0);
+                }, Qt::QueuedConnection);
             }
-            handledNumber++;
-            progressDialog->setValue(((handledNumber  + 0.0) / size) * 100.0);
+            catch (cv::Exception e)
+            {
+                qDebug() << e.what();
+            }
         }
-        refresh();
+        QMetaObject::invokeMethod(this, &ImageWidget::refresh, Qt::QueuedConnection);
     };
     QThread *workerThread = new QThread(this);
     QObject::connect(workerThread, &QThread::started, task);
-    QObject::connect(progressDialog, &QProgressDialog::canceled, workerThread, &QThread::requestInterruption);
-    QObject::connect(workerThread, &QThread::finished, workerThread, &QObject::deleteLater);
-    QObject::connect(workerThread, &QThread::finished, progressDialog, &QObject::deleteLater);
+    connect(progressDialog, &QProgressDialog::canceled, workerThread, &QThread::requestInterruption);
+    connect(workerThread, &QThread::finished, this, [this, workerThread]()
+    {
+        workerThread->deleteLater();
+        progressDialog->deleteLater();
+    }, Qt::QueuedConnection);
     workerThread->start();
-
 }
 
